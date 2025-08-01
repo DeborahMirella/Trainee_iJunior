@@ -1,36 +1,78 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Ficheiro: prisma/schema.prisma
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// --- Bloco de Configuração ---
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = "prisma+postgres://localhost:51213/?api_key=eyJkYXRhYmFzZVVybCI6InBvc3RncmVzOi8vcG9zdGdyZXM6cG9zdGdyZXNAbG9jYWxob3N0OjUxMjE0L3RlbXBsYXRlMT9zc2xtb2RlPWRpc2FibGUmY29ubmVjdGlvbl9saW1pdD0xJmNvbm5lY3RfdGltZW91dD0wJm1heF9pZGxlX2Nvbm5lY3Rpb25fbGlmZXRpbWU9MCZwb29sX3RpbWVvdXQ9MCZzaW5nbGVfdXNlX2Nvbm5lY3Rpb25zPXRydWUmc29ja2V0X3RpbWVvdXQ9MCIsIm5hbWUiOiJkZWZhdWx0Iiwic2hhZG93RGF0YWJhc2VVcmwiOiJwb3N0Z3JlczovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1MTIxNS90ZW1wbGF0ZTE_c3NsbW9kZT1kaXNhYmxlJmNvbm5lY3Rpb25fbGltaXQ9MSZjb25uZWN0X3RpbWVvdXQ9MCZtYXhfaWRsZV9jb25uZWN0aW9uX2xpZmV0aW1lPTAmcG9vbF90aW1lb3V0PTAmc2luZ2xlX3VzZV9jb25uZWN0aW9ucz10cnVlJnNvY2tldF90aW1lb3V0PTAifQ"
-}
-
-enum TipoPrilegio {
-
+// --- Enumeração ---
+enum TipoPrivilegio {
   comum
   premium
   admin
-  
-}
-model usuarios {
- 
-  id         Int     @id @default(autoincrement())
-  nome       String
-  email      String  @unique
-  photo      String?
-
-  //Optei por usar Enum (Role) ao ínves de Boolean pois foi a opção indicado no video da atividade da semana
-  privilegios Boolean @default(false)
-
 }
 
+// --- Modelos (Tabelas) ---
+model Usuario {
+  id          Int            @id @default(autoincrement())
+  nome        String
+  email       String         @unique
+  senha       String
+  foto        String?
+  privilegios TipoPrivilegio @default(comum)
 
+  // Relação: Um utilizador pode ter muitas reproduções
+  reproducoes Reproducao[]
+
+  @@map("usuarios") // Mapeia este modelo para a tabela "usuarios"
+}
+
+model Artista {
+  id             Int    @id @default(autoincrement())
+  nome           String
+  foto           String?
+  numeroStreams  Int    @default(0) @map("numero_streams")
+
+  // Relação: Um artista pode ter muitas músicas
+  musicas Musica[]
+
+  @@map("artistas") // Mapeia este modelo para a tabela "artistas"
+}
+
+model Musica {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  duracao   Int
+  genero    String?
+  album     String?
+
+  // Relação Um-para-Muitos com Artista (Chave Estrangeira)
+  artistaId Int     @map("artista_id")
+  artista   Artista @relation(fields: [artistaId], references: [id])
+
+  // Relação: Uma música pode estar em muitas reproduções
+  reproducoes Reproducao[]
+
+  @@map("musicas") // Mapeia este modelo para a tabela "musicas"
+}
+
+// Modelo para a tabela de junção (Muitos-para-Muitos)
+model Reproducao {
+  id         Int      @id @default(autoincrement()) // Adicionado para uma chave primária única
+  dataEscuta DateTime @map("data_escuta")
+
+  // Relação com Usuario
+  usuarioId  Int      @map("usuario_id")
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+
+  // Relação com Musica
+  musicaId   Int      @map("musica_id")
+  musica     Musica   @relation(fields: [musicaId], references: [id])
+
+  @@map("reproduções") // Mapeia este modelo para a tabela "reproduções"
+}
