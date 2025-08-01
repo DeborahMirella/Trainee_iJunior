@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  output   = "@prisma/client"
 }
 
 datasource db {
@@ -14,7 +14,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TipoPrilegio {
+enum TipoPrivilegio {
 
   comum
   premium
@@ -28,7 +28,7 @@ model usuarios {
   email      String      @unique
   photo      String?
 
-privilegios TipoPrilegio @default(comum)
+privilegios TipoPrivilegio @default(comum)
 reprodicoes Reproducao[]
 @@map("Usuarios")
 
@@ -64,7 +64,9 @@ model Reproducao {
   usuarioId Int
   musicaId  Int
   usuario   usuarios @relation(fields: [usuarioId], references: [id])
-  musica    Musica  @relation((fields: [musicaId], references: [id]))
+  musica    Musica   @relation(fields: [musicaId], references: [id])
+  @@id([usuarioId, musicaId, data_escuta])
+  @@map("reproducoes")
 }
 
 
