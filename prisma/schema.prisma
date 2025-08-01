@@ -50,6 +50,7 @@ model Musica {
   duracao   Int
   genero    String?
   album     String?
+ 
 
   // Relação Um-para-Muitos com Artista (Chave Estrangeira)
   artistaId Int     @map("artista_id")
