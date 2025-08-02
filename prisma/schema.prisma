@@ -29,11 +29,11 @@ model usuarios {
 
 model artistas {
   id             Int     @id @default(autoincrement())
-  nome           String
-  // Corrigido: foto deve ser opcional para corresponder à sua planta original.
+  nome           String  
+ 
   foto           String?
   numero_streams Int     @default(0)
-  // Corrigido: A relação deve apontar para o modelo 'musicas'.
+ 
   musicas        musicas[]
   @@map("artistas")
 }
@@ -44,7 +44,6 @@ model musicas {
   genero    String?
   album     String?
   artistaId Int
-  // Corrigido: A relação deve apontar para o modelo 'artistas'.
   artista   artistas @relation(fields: [artistaId], references: [id])
   reproducoes Reproducao[]
   @@map("musicas")
@@ -54,7 +53,6 @@ model Reproducao {
   data_escuta DateTime @default(now())
   usuarioId   Int
   musicaId    Int
-  // Corrigido: As relações devem apontar para os modelos 'usuarios' e 'musicas'.
   usuario     usuarios @relation(fields: [usuarioId], references: [id])
   musica      musicas  @relation(fields: [musicaId], references: [id])
   @@id([usuarioId, musicaId, data_escuta])
