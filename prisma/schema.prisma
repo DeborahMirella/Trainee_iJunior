@@ -1,77 +1,59 @@
-  // Ficheiro: prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-  // --- Bloco de Configuração ---
-  datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-  }
+generator client {
+  provider = "prisma-client-js"
+}
 
-  generator client {
-    provider = "prisma-client-js"
-  }
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
 
-  // --- Enumeração ---
-  enum TipoPrivilegio {
-    comum
-    premium
-    admin
-  }
+enum TipoPrivilegio {
+  comum
+  premium
+  admin
+}
 
-  // --- Modelos (Tabelas) ---
-  model Usuario {
-    id          Int            @id @default(autoincrement())
-    nome        String
-    email       String         @unique
-    senha       String
-    foto        String?
-    privilegios TipoPrivilegio @default(comum)
+model usuarios {
+  id          Int            @id @default(autoincrement())
+  nome        String
+  email       String         @unique
+  senha       String
+  foto        String?
+  privilegios TipoPrivilegio @default(comum)
+  reproducoes Reproducao[]
+  @@map("usuarios")
+}
 
-    // Relação: Um utilizador pode ter muitas reproduções
-    reproducoes Reproducao[]
+model artistas {
+  id             Int      @id @default(autoincrement())
+  nome           String   @unique
+  foto           String?
+  numero_streams Int      @default(0)
+  musicas        musicas[]
+  @@map("artistas")
+}
 
-    @@map("usuarios") // Mapeia este modelo para a tabela "usuarios"
-  }
+model musicas {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  duracao   Int
+  genero    String?
+  album     String?
+  artistaId Int
+  artista   artistas @relation(fields: [artistaId], references: [id])
+  reproducoes Reproducao[]
+  @@map("musicas")
+}
 
-  model Artista {
-    id             Int    @id @default(autoincrement())
-    nome           String
-    foto           String?
-    numeroStreams  Int    @default(0) @map("numero_streams")
-
-    // Relação: Um artista pode ter muitas músicas
-    musicas Musica[]
-
-    @@map("artistas") // Mapeia este modelo para a tabela "artistas"
-  }
-
-  model Musica {
-    id        Int     @id @default(autoincrement())
-    nome      String
-    duracao   Int
-    genero    String?
-    album     String?
-    // Relação Um-para-Muitos com Artista (Chave Estrangeira)
-    artistaId Int     @map("artista_id")
-    artista   Artista @relation(fields: [artistaId], references: [id])
-
-    // Relação: Uma música pode estar em muitas reproduções
-    reproducoes Reproducao[]
-
-    @@map("musicas") // Mapeia este modelo para a tabela "musicas"
-  }
-
-  // Modelo para a tabela de junção (Muitos-para-Muitos)
-  model Reproducao {
-    id         Int      @id @default(autoincrement()) // Adicionado para uma chave primária única
-    dataEscuta DateTime @map("data_escuta")
-
-    // Relação com Usuario
-    usuarioId  Int      @map("usuario_id")
-    usuario    Usuario  @relation(fields: [usuarioId], references: [id])
-
-    // Relação com Musica
-    musicaId   Int      @map("musica_id")
-    musica     Musica   @relation(fields: [musicaId], references: [id])
-
-    @@map("reproduções") // Mapeia este modelo para a tabela "reproduções"
-  }
+model Reproducao {
+  data_escuta DateTime @default(now())
+  usuarioId   Int
+  musicaId    Int
+  usuario     usuarios @relation(fields: [usuarioId], references: [id])
+  musica      musicas  @relation(fields: [musicaId], references: [id])
+  @@id([usuarioId, musicaId, data_escuta])
+  @@map("reproducoes")
+}
