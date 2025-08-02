@@ -28,12 +28,10 @@ model usuarios {
 }
 
 model artistas {
-  id             Int     @id @default(autoincrement())
-  nome           String  
- 
+  id             Int      @id @default(autoincrement())
+  nome           String   @unique
   foto           String?
-  numero_streams Int     @default(0)
- 
+  numero_streams Int      @default(0)
   musicas        musicas[]
   @@map("artistas")
 }
