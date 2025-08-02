@@ -5,7 +5,7 @@ import { artistas } from "@prisma/client";
 class ArtistasService {
   
   //Criar
-  async createArtista(data: { nome: string; foto?: string }): Promise<artistas> {
+  async createArtista(data: { nome: string; foto?: string | null }): Promise<artistas> {
     try {
       
       const novoArtista = await prisma.artistas.create({
@@ -61,7 +61,7 @@ class ArtistasService {
   }
   
   //Atualizar
-  async updateArtista(id: number, data: { nome?: string; foto?: string }): Promise<artistas> {
+  async updateArtista(id: number, data: { nome?: string; foto?: string | null }): Promise<artistas> {
     try {
       const artistaAtualizado = await prisma.artistas.update({
         where: { id },
