@@ -91,4 +91,20 @@ class MusicService {
 
     return musicaAtualizada;
   }
+
+  //Deletar música - CRUD.
+
+  async deletaMusica(id: number) {
+    await this.conseguirMusicaPorId(id);
+
+    const musicaDeletada = await prisma.musica.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return musicaDeletada;
+  }
+
+  //
 }
