@@ -24,7 +24,9 @@ class ArtistasService {
       throw new Error("Já existe um artista com esse nome");
     }
 
-    
+    console.error("Erro ao criar artsita no serviço:", error);
+    throw new Error("Não foi possível criar o artista");
+   }
   }
   
   //Buscar
