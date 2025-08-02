@@ -2,12 +2,14 @@ import { Musica } from "@prisma/client";
 import prisma from "../../../config/client";
 import { Param } from "@prisma/client/runtime/library";
 
-class MusicService {
+type dadosCriacaoMusica = Omit<Musica, "id">;
+type dadosAtualizacaoMusica = Partial<Omit<Musica, "id" | "artistaId">>;
+export class MusicService {
   //Create - Criação de uma nova música
-  async criarMusica(body: Omit<Musica, "id">, artistaId: number) {
+  async criarMusica(body: dadosCriacaoMusica) {
     if (!body.nome || !body.duracao || !body.artistaId) {
       throw new Error(
-        "O nome, a duração e o id do artista não podem ser nulos."
+        "Nome, Duração e ID  do artista são dados obrigatórios para a criação."
       );
     }
 
@@ -19,7 +21,7 @@ class MusicService {
         genero: body.genero,
         artista: {
           connect: {
-            id: artistaId,
+            id: body.artistaId,
           },
         },
       },
@@ -29,53 +31,61 @@ class MusicService {
     return musicaCriada;
   }
 
+  //READ - CRUD:
+
   async listarMusicas() {
     const musicas = await prisma.musica.findMany({
       orderBy: { nome: "asc" },
       include: { artista: true },
     });
 
-    if (!(await musicas).length) {
-      throw new Error("Nenhuma música encontrada.");
-    }
     return musicas;
   }
 
   async conseguirMusicaPorId(id: number) {
-    if (id === null || isNaN(id))
-      throw new Error("Id da música é nulo ou inválido.");
+    if (isNaN(id)) {
+      throw new Error("Id da música é inválido.");
+    }
 
     const musicaPorId = await prisma.musica.findUnique({
       where: { id },
+      include: { artista: true },
     });
 
-    if (!musicaPorId) throw new Error("Música não encontrada.");
+    if (!musicaPorId) {
+      throw new Error("Música não encontrada.");
+    }
 
     return musicaPorId;
   }
 
-  async conseguirMusicaPorNome(nome: string) {
-    if (!nome) throw new Error("Nome inválido ou vazio.");
+  async conseguirMusicasPorNome(nome: string) {
+    if (!nome) {
+      throw new Error("Nome inválido ou vazio.");
+    }
 
-    const musicaPorNome = await prisma.musica.findFirst({
+    const musicasPorNome = await prisma.musica.findMany({
       where: {
-        nome: nome,
+        nome: {
+          contains: nome,
+          mode: "insensitive",
+        },
       },
     });
 
-    if (!musicaPorNome) throw new Error(`Musica: "${nome}" não encontrada.`);
+    if (musicasPorNome.length === 0) {
+      throw new Error(`Nenhuma música contendo ${nome} encontrada.`);
+    }
 
-    return musicaPorNome;
+    return musicasPorNome;
   }
   //async conseguirMusicaPorArtista(){}, preciso de uma funcao do artistaService.
 
   //Atualizar do CRUD:
 
-  async atualizaMusica(id: number, body: Musica) {
-    if (!body.nome) throw new Error("Nome inválido para a música.");
-    if (!body.duracao) throw new Error("Duração da música não pode ser nulo.");
-
+  async atualizaMusica(id: number, body: dadosAtualizacaoMusica) {
     await this.conseguirMusicaPorId(id);
+
     const musicaAtualizada = await prisma.musica.update({
       data: {
         nome: body.nome,
@@ -87,6 +97,8 @@ class MusicService {
       where: {
         id: id,
       },
+
+      include: { artista: true },
     });
 
     return musicaAtualizada;
@@ -98,13 +110,9 @@ class MusicService {
     await this.conseguirMusicaPorId(id);
 
     const musicaDeletada = await prisma.musica.delete({
-      where: {
-        id: id,
-      },
+      where: { id },
     });
 
     return musicaDeletada;
   }
-
-  //
 }
