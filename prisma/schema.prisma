@@ -1,6 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,6 +13,7 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+
 enum TipoPrivilegio {
   comum
   premium
@@ -17,47 +21,43 @@ enum TipoPrivilegio {
 }
 
 model usuarios {
-  id          Int            @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   nome        String
-  email       String         @unique
+  email       String          @unique
   senha       String
   foto        String?
-  privilegios TipoPrivilegio @default(comum)
-  reproducoes Reproducao[]
+  privilegios TipoPrivilegio  @default(comum)
 
-  @@map("usuarios")
+  reproduções reproduções[]
 }
 
 model artistas {
-  id             Int      @id @default(autoincrement())
-  nome           String   @unique
+  id             Int       @id @default(autoincrement())
+  nome           String
   foto           String?
-  numero_streams Int      @default(0)
-  musicas        musicas[]
+  numero_streams Int       @default(0)
 
-  @@map("artistas")
+  musicas        musicas[]
 }
 
 model musicas {
-  id        Int     @id @default(autoincrement())
-  nome      String
-  duracao   Int
-  genero    String?
-  album     String?
-  artistaId Int
-  artista   artistas @relation(fields: [artistaId], references: [id])
-  reproducoes Reproducao[]
+  id         Int       @id @default(autoincrement())
+  nome       String
+  genero     String?
+  album      String?
+  artista_id Int
+  artistas   artistas  @relation(fields: [artista_id], references: [id])
 
-  @@map("musicas")
+  reproduções reproduções[]
 }
 
-model Reproducao {
-  data_escuta DateTime @default(now())
-  usuarioId   Int
-  musicaId    Int
-  usuario     usuarios @relation(fields: [usuarioId], references: [id])
-  musica      musicas  @relation(fields: [musicaId], references: [id])
+model reproduções {
+  usuario_id   Int
+  musica_id    Int
+  data_escuta  DateTime
 
-  @@id([usuarioId, musicaId, data_escuta])
-  @@map("reproducoes")
+  usuarios     usuarios @relation(fields: [usuario_id], references: [id])
+  musicas      musicas  @relation(fields: [musica_id], references: [id])
+
+  @@id([usuario_id, musica_id, data_escuta])
 }
