@@ -28,4 +28,46 @@ class MusicService {
 
     return musicaCriada;
   }
+
+  async listarMusicas() {
+    const musicas = await prisma.musica.findMany({
+      orderBy: { nome: "asc" },
+      include: { artista: true },
+    });
+
+    if (!(await musicas).length) {
+      throw new Error("Nenhuma música encontrada.");
+    }
+    return musicas;
+  }
+
+  async conseguirMusicaPorId(id: number) {
+    if (id === null || isNaN(id))
+      throw new Error("Id da música é nulo ou inválido.");
+
+    const musicaPorId = await prisma.musica.findUnique({
+      where: { id },
+    });
+
+    if (!musicaPorId) throw new Error("Música não encontrada.");
+
+    return musicaPorId;
+  }
+
+  async conseguirMusicaPorNome(nome: string) {
+    if (!nome) throw new Error("Nome inválido ou vazio.");
+
+    const musicaPorNome = await prisma.musica.findFirst({
+      where: {
+        nome: nome,
+      },
+    });
+
+    if (!musicaPorNome) throw new Error(`Musica: "${nome}" não encontrada.`);
+
+    return musicaPorNome;
+  }
+  //async conseguirMusicaPorArtista(){}, preciso de uma funcao do artistaService.
+
+  //Atualizar do CRUD:
 }
