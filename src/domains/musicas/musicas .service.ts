@@ -70,4 +70,25 @@ class MusicService {
   //async conseguirMusicaPorArtista(){}, preciso de uma funcao do artistaService.
 
   //Atualizar do CRUD:
+
+  async atualizaMusica(id: number, body: Musica) {
+    if (!body.nome) throw new Error("Nome inválido para a música.");
+    if (!body.duracao) throw new Error("Duração da música não pode ser nulo.");
+
+    await this.conseguirMusicaPorId(id);
+    const musicaAtualizada = await prisma.musica.update({
+      data: {
+        nome: body.nome,
+        duracao: body.duracao,
+        genero: body.genero,
+        album: body.album,
+      },
+
+      where: {
+        id: id,
+      },
+    });
+
+    return musicaAtualizada;
+  }
 }
