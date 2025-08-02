@@ -17,7 +17,7 @@ export class musicaController {
   async listarMusicas() {
     try {
       const musicas = await musicaService.listarMusicas();
-      if (musicas.length) {
+      if (musicas.length === 0) {
         console.log("\nℹ️ Nenhuma música encontrada.");
         return;
       }
