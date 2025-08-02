@@ -24,6 +24,7 @@ model usuarios {
   foto        String?
   privilegios TipoPrivilegio @default(comum)
   reproducoes Reproducao[]
+
   @@map("usuarios")
 }
 
@@ -33,17 +34,20 @@ model artistas {
   foto           String?
   numero_streams Int      @default(0)
   musicas        musicas[]
+
   @@map("artistas")
 }
 
 model musicas {
   id        Int     @id @default(autoincrement())
   nome      String
+  duracao   Int
   genero    String?
   album     String?
   artistaId Int
   artista   artistas @relation(fields: [artistaId], references: [id])
   reproducoes Reproducao[]
+
   @@map("musicas")
 }
 
@@ -53,6 +57,7 @@ model Reproducao {
   musicaId    Int
   usuario     usuarios @relation(fields: [usuarioId], references: [id])
   musica      musicas  @relation(fields: [musicaId], references: [id])
+
   @@id([usuarioId, musicaId, data_escuta])
   @@map("reproducoes")
 }
