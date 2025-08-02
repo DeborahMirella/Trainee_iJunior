@@ -1,52 +1,58 @@
-
-import artistasService from "./src/domains/artistas/services/artistasService";
+import ArtistasService from "./src/domains/artistas/artistasService"
+import { criarUsuario, listarUsuarios } from "./src/domains/usuarios/usuariosService"
+import { criarMusica, listarMusicas } from "./src/domains/musicas/musicasService"
+import { criarReproducao, listarReproducoes } from "./src/domains/reproducoes/reproducoesService"
 
 async function main() {
+  await criarUsuario({
+    nome: "Hermes",
+    email: "hermes@gmail.com",
+    senha: "123456",
+    privilegios: "admin"
+  })
 
-  console.log("Iniciando o teste");
-  
-  const NomeArtista = "Artista2";
-  let artistaCriadoId: number | null = null;
+  const usuarios = await listarUsuarios()
+  console.log("Usuários:", usuarios)
 
-  try {
+  const novoArtista = await ArtistasService.createArtista({
+    nome: "Coldplay",
+    foto: "coldplay.jpg"
+  })
+  console.log("Artista criado:", novoArtista)
 
-    const dadosNovoArtista = {
-      nome: NomeArtista,
-      foto: "url_Artista2"
-    };
-    
-    console.log("Enviando dados:", dadosNovoArtista);
-    
-    const artistaCriado = await artistasService.createArtista(dadosNovoArtista);
-    
-    artistaCriadoId = artistaCriado.id;
+  const artistas = await ArtistasService.findAllArtistas()
+  console.log("Lista de artistas:", artistas)
 
-  console.log("\nArtista criado com sucesso! Registro inserido no banco de dados:", artistaCriado);
-  
-} catch (error) {
+  await ArtistasService.updateArtista(novoArtista.id, { foto: "coldplay_novo.jpg" })
+  console.log("Artista atualizado")
 
-    console.error("Ocorreu uma falha durante o teste:", error);
-  } 
+  const novaMusica = await criarMusica({
+    nome: "Yellow",
+    genero: "Rock",
+    album: "Parachutes",
+    artista_id: novoArtista.id
+  })
+  console.log("Música criada:", novaMusica)
 
-  finally {
+  const musicas = await listarMusicas()
+  console.log("Lista de músicas:", musicas)
 
-     if (artistaCriadoId !== null) {
+  const novaReproducao = await criarReproducao({
+    usuario_id: usuarios[0].id,
+    musica_id: novaMusica.id,
+    data_escuta: new Date()
+  })
+  console.log("Reprodução criada:", novaReproducao)
 
-      console.log(`Apagando o artista de ID: ${artistaCriadoId}`);
-
-      try {
-        await artistasService.deleteArtista(artistaCriadoId);
-
-        console.log("O artista de teste foi removido.");
-      } 
-      catch (cleanupError) {
-
-        console.error("Não foi possível apagar o artista de teste:", cleanupError);
-      }
-    }
-
-    console.log("Teste finalizado");
-  }
+  const reproducoes = await listarReproducoes()
+  console.log("Lista de reproduções:", reproducoes)
 }
 
-main();
+main()
+  .catch((e) => {
+    console.error(e)
+  })
+  .finally(async () => {
+    const prisma = (await import('./src/prisma')).default
+    await prisma.$disconnect()
+  })
