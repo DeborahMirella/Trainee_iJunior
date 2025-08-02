@@ -1,6 +1,5 @@
+import { usuarios } from "@prisma/client";
 import prisma from "../../../../config/prismaClient"
-
-import { Usuario } from "@prisma/client";
 
 class usuariosService {
     async create(body: usuarios){

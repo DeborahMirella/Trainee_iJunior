@@ -1,75 +1,62 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "@prisma/client"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum TipoPrivilegio {
-
   comum
   premium
   admin
-  
-}
-model Usuario {
- 
-  id         Int         @id @default(autoincrement())
-  nome       String
-  email      String      @unique
-  senha      String
-  foto       String?
-
-privilegios TipoPrivilegio @default(comum)
-
-reproducoes Reproducao[]
-@@map("usuarios")
-
 }
 
-model Artista {
-
-  id                       Int     @id @default(autoincrement())
-  nome                     String 
-  foto                     String?
-  numero_streams           Int     @default(0)
-  musicas Musica[]         
-  @@map("artistas")
-
-}
-
-model Musica {
-
-  id          Int     @id @default(autoincrement())
+model usuarios {
+  id          Int            @id @default(autoincrement())
   nome        String
-  genero      String?
-  album       String?
-  artistaId   Int
-  artista     Artista @relation(fields: [artistaId], references: [id])
+  email       String         @unique
+  senha       String
+  foto        String?
+  privilegios TipoPrivilegio @default(comum)
+  reproducoes Reproducao[]
+  @@map("usuarios")
+}
+
+model artistas {
+  id             Int     @id @default(autoincrement())
+  nome           String
+  // Corrigido: foto deve ser opcional para corresponder à sua planta original.
+  foto           String?
+  numero_streams Int     @default(0)
+  // Corrigido: A relação deve apontar para o modelo 'musicas'.
+  musicas        musicas[]
+  @@map("artistas")
+}
+
+model musicas {
+  id        Int     @id @default(autoincrement())
+  nome      String
+  genero    String?
+  album     String?
+  artistaId Int
+  // Corrigido: A relação deve apontar para o modelo 'artistas'.
+  artista   artistas @relation(fields: [artistaId], references: [id])
   reproducoes Reproducao[]
   @@map("musicas")
-
 }
 
 model Reproducao {
-
   data_escuta DateTime @default(now())
-  usuarioId Int
-  musicaId  Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
-  musica    Musica   @relation(fields: [musicaId], references: [id])
+  usuarioId   Int
+  musicaId    Int
+  // Corrigido: As relações devem apontar para os modelos 'usuarios' e 'musicas'.
+  usuario     usuarios @relation(fields: [usuarioId], references: [id])
+  musica      musicas  @relation(fields: [musicaId], references: [id])
   @@id([usuarioId, musicaId, data_escuta])
   @@map("reproducoes")
 }
-
-
-
