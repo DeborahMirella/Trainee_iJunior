@@ -1,4 +1,4 @@
-import prisma from "../../../../config/prismaClient";
+import prisma from "../../prisma"
 
 import { artistas } from "@prisma/client";
 
@@ -78,7 +78,7 @@ class ArtistasService {
   async deleteArtista(id: number): Promise<artistas> {
     try {
       const artistaDeletado = await prisma.$transaction(async (tx) => {
-        await tx.musicas.deleteMany({ where: { artistaId: id } });
+        await tx.musicas.deleteMany({ where: { artista_id: id } });
         const artista = await tx.artistas.delete({ where: { id } });
         return artista;
       });
