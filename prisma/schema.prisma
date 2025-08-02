@@ -1,79 +1,77 @@
-// Ficheiro: prisma/schema.prisma
+  // Ficheiro: prisma/schema.prisma
 
-// --- Bloco de Configuração ---
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+  // --- Bloco de Configuração ---
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
 
-generator client {
-  provider = "prisma-client-js"
-}
+  generator client {
+    provider = "prisma-client-js"
+  }
 
-// --- Enumeração ---
-enum TipoPrivilegio {
-  comum
-  premium
-  admin
-}
+  // --- Enumeração ---
+  enum TipoPrivilegio {
+    comum
+    premium
+    admin
+  }
 
-// --- Modelos (Tabelas) ---
-model Usuario {
-  id          Int            @id @default(autoincrement())
-  nome        String
-  email       String         @unique
-  senha       String
-  foto        String?
-  privilegios TipoPrivilegio @default(comum)
+  // --- Modelos (Tabelas) ---
+  model Usuario {
+    id          Int            @id @default(autoincrement())
+    nome        String
+    email       String         @unique
+    senha       String
+    foto        String?
+    privilegios TipoPrivilegio @default(comum)
 
-  // Relação: Um utilizador pode ter muitas reproduções
-  reproducoes Reproducao[]
+    // Relação: Um utilizador pode ter muitas reproduções
+    reproducoes Reproducao[]
 
-  @@map("usuarios") // Mapeia este modelo para a tabela "usuarios"
-}
+    @@map("usuarios") // Mapeia este modelo para a tabela "usuarios"
+  }
 
-model Artista {
-  id             Int    @id @default(autoincrement())
-  nome           String
-  foto           String?
-  numeroStreams  Int    @default(0) @map("numero_streams")
+  model Artista {
+    id             Int    @id @default(autoincrement())
+    nome           String
+    foto           String?
+    numeroStreams  Int    @default(0) @map("numero_streams")
 
-  // Relação: Um artista pode ter muitas músicas
-  musicas Musica[]
+    // Relação: Um artista pode ter muitas músicas
+    musicas Musica[]
 
-  @@map("artistas") // Mapeia este modelo para a tabela "artistas"
-}
+    @@map("artistas") // Mapeia este modelo para a tabela "artistas"
+  }
 
-model Musica {
-  id        Int     @id @default(autoincrement())
-  nome      String
-  duracao   Int
-  genero    String?
-  album     String?
- 
+  model Musica {
+    id        Int     @id @default(autoincrement())
+    nome      String
+    duracao   Int
+    genero    String?
+    album     String?
+    // Relação Um-para-Muitos com Artista (Chave Estrangeira)
+    artistaId Int     @map("artista_id")
+    artista   Artista @relation(fields: [artistaId], references: [id])
 
-  // Relação Um-para-Muitos com Artista (Chave Estrangeira)
-  artistaId Int     @map("artista_id")
-  artista   Artista @relation(fields: [artistaId], references: [id])
+    // Relação: Uma música pode estar em muitas reproduções
+    reproducoes Reproducao[]
 
-  // Relação: Uma música pode estar em muitas reproduções
-  reproducoes Reproducao[]
+    @@map("musicas") // Mapeia este modelo para a tabela "musicas"
+  }
 
-  @@map("musicas") // Mapeia este modelo para a tabela "musicas"
-}
+  // Modelo para a tabela de junção (Muitos-para-Muitos)
+  model Reproducao {
+    id         Int      @id @default(autoincrement()) // Adicionado para uma chave primária única
+    dataEscuta DateTime @map("data_escuta")
 
-// Modelo para a tabela de junção (Muitos-para-Muitos)
-model Reproducao {
-  id         Int      @id @default(autoincrement()) // Adicionado para uma chave primária única
-  dataEscuta DateTime @map("data_escuta")
+    // Relação com Usuario
+    usuarioId  Int      @map("usuario_id")
+    usuario    Usuario  @relation(fields: [usuarioId], references: [id])
 
-  // Relação com Usuario
-  usuarioId  Int      @map("usuario_id")
-  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+    // Relação com Musica
+    musicaId   Int      @map("musica_id")
+    musica     Musica   @relation(fields: [musicaId], references: [id])
 
-  // Relação com Musica
-  musicaId   Int      @map("musica_id")
-  musica     Musica   @relation(fields: [musicaId], references: [id])
-
-  @@map("reproduções") // Mapeia este modelo para a tabela "reproduções"
-}
+    @@map("reproduções") // Mapeia este modelo para a tabela "reproduções"
+  }

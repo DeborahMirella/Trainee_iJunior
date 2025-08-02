@@ -1,4 +1,4 @@
-import { MusicService } from "./musicas .service";
+import { MusicService } from "./musicaService";
 import { Musica } from "@prisma/client";
 const musicaService = new MusicService();
 
@@ -44,7 +44,7 @@ export class musicaController {
       console.log("\n🎵 Música Encontrada por ID:");
       console.log(musica);
     } catch (error: any) {
-      console.error("\n❌ Erro ao listar músicas: ", error.message);
+      console.error("\n❌ Erro ao buscar música por ID: ", error.message);
     }
   }
 
@@ -68,7 +68,7 @@ export class musicaController {
         }))
       );
     } catch (error: any) {
-      console.error("\n❌ Erro ao bucas músicas: ", error.message);
+      console.error("\n❌ Erro ao buscar músicas: ", error.message);
     }
   }
 
