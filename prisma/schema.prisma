@@ -21,16 +21,18 @@ enum TipoPrivilegio {
   admin
   
 }
-model usuarios {
+model Usuario {
  
-  id         Int          @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   nome       String
   email      String      @unique
-  photo      String?
+  senha      String
+  foto       String?
 
 privilegios TipoPrivilegio @default(comum)
-reprodicoes Reproducao[]
-@@map("Usuarios")
+
+reproducoes Reproducao[]
+@@map("usuarios")
 
 }
 
@@ -49,8 +51,8 @@ model Musica {
 
   id          Int     @id @default(autoincrement())
   nome        String
-  genero      String
-  album       String
+  genero      String?
+  album       String?
   artistaId   Int
   artista     Artista @relation(fields: [artistaId], references: [id])
   reproducoes Reproducao[]
@@ -63,7 +65,7 @@ model Reproducao {
   data_escuta DateTime @default(now())
   usuarioId Int
   musicaId  Int
-  usuario   usuarios @relation(fields: [usuarioId], references: [id])
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
   musica    Musica   @relation(fields: [musicaId], references: [id])
   @@id([usuarioId, musicaId, data_escuta])
   @@map("reproducoes")
