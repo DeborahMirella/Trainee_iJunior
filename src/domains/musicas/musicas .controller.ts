@@ -14,14 +14,72 @@ export class musicaController {
       console.error(`❌ Erro ao criar música: ${error.message}`);
     }
   }
-  async procurarMusica() {
+  async listarMusicas() {
     try {
-    } catch (error: any) {}
+      const musicas = await musicaService.listarMusicas();
+      if (musicas.length) {
+        console.log("\nℹ️ Nenhuma música encontrada.");
+        return;
+      }
+
+      console.log("\n--- Lista de Músicas ---");
+      console.table(
+        musicas.map((m) => ({
+          ID: m.id,
+          Nome: m.nome,
+          Duração: m.duracao,
+          Gênero: m.genero,
+          Álbum : m.album,
+          Artista: m.artistaId,
+        }))
+      );
+    } catch (error: any) {
+      console.error(`\n❌ Erro ao listar músicas: ${error.message}`);
+    }
   }
 
-  async atualizarMusica() {
+  async conseguirMusicaPorId(id: number) {
     try {
-    } catch (error: any) {}
+      const musica = await musicaService.conseguirMusicaPorId(id);
+      console.log("\n🎵 Música Encontrada por ID:");
+      console.log(musica);
+    } catch (error: any) {
+      console.error("\n❌ Erro ao listar músicas: ", error.message);
+    }
+  }
+
+  async conseguirMusicasPorNome(nome: string) {
+    try {
+      const musicas = await musicaService.conseguirMusicasPorNome(nome);
+       if (musicas.length === 0) {
+        console.log(`\nℹ️ Nenhuma música encontrada com o termo "${nome}".`);
+        return;
+      }
+
+        console.log(`\n🎵 Músicas Encontradas com o termo "${nome}"`);
+        console.table(
+        musicas.map((m) => ({
+          ID: m.id,
+          Nome: m.nome,
+          Duração: m.duracao,
+          Gênero: m.genero,
+          Álbum : m.album,
+          Artista: m.artistaId,
+        }))
+      );
+      
+    } catch (error: any) {
+      console.error("\n❌ Erro ao bucas músicas: ", error.message);
+    }
+  }
+
+  async atualizarMusica(id: number, dadosParaAtualizar: dadosAtualizacaoMusica) {
+    try {
+    const musicaAtualizada = await musicaService.atualizaMusica(id, dadosParaAtualizar);
+    console.log("✅ Música atualizada com sucesso:", musicaAtualizada);
+
+  } catch (error: any) {
+    console.error(`❌ Erro ao atualizar música: ${error.message}`);
   }
 
   async deletarMusica() {

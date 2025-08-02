@@ -71,6 +71,7 @@ export class MusicService {
           mode: "insensitive",
         },
       },
+      include: { artista: true },
     });
 
     if (musicasPorNome.length === 0) {
