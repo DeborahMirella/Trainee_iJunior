@@ -29,7 +29,7 @@ export class musicaController {
           Nome: m.nome,
           Duração: m.duracao,
           Gênero: m.genero,
-          Álbum : m.album,
+          Álbum: m.album,
           Artista: m.artistaId,
         }))
       );
@@ -51,39 +51,50 @@ export class musicaController {
   async conseguirMusicasPorNome(nome: string) {
     try {
       const musicas = await musicaService.conseguirMusicasPorNome(nome);
-       if (musicas.length === 0) {
+      if (musicas.length === 0) {
         console.log(`\nℹ️ Nenhuma música encontrada com o termo "${nome}".`);
         return;
       }
 
-        console.log(`\n🎵 Músicas Encontradas com o termo "${nome}"`);
-        console.table(
+      console.log(`\n🎵 Músicas Encontradas com o termo "${nome}"`);
+      console.table(
         musicas.map((m) => ({
           ID: m.id,
           Nome: m.nome,
           Duração: m.duracao,
           Gênero: m.genero,
-          Álbum : m.album,
+          Álbum: m.album,
           Artista: m.artistaId,
         }))
       );
-      
     } catch (error: any) {
       console.error("\n❌ Erro ao bucas músicas: ", error.message);
     }
   }
 
-  async atualizarMusica(id: number, dadosParaAtualizar: dadosAtualizacaoMusica) {
+  async atualizarMusica(
+    id: number,
+    dadosParaAtualizar: dadosAtualizacaoMusica
+  ) {
     try {
-    const musicaAtualizada = await musicaService.atualizaMusica(id, dadosParaAtualizar);
-    console.log("✅ Música atualizada com sucesso:", musicaAtualizada);
-
-  } catch (error: any) {
-    console.error(`❌ Erro ao atualizar música: ${error.message}`);
+      const musicaAtualizada = await musicaService.atualizaMusica(
+        id,
+        dadosParaAtualizar
+      );
+      console.log("✅ Música atualizada com sucesso:", musicaAtualizada);
+    } catch (error: any) {
+      console.error(`❌ Erro ao atualizar música: ${error.message}`);
+    }
   }
 
-  async deletarMusica() {
+  async deletarMusica(id: number) {
     try {
-    } catch (error: any) {}
+      const musicaDeletada = await musicaService.deletaMusica(id);
+      console.log(
+        `\n✅ Música "${musicaDeletada.nome}" (ID: ${musicaDeletada.id}) foi removida com sucesso!`
+      );
+    } catch (error: any) {
+      console.error(`\n❌ Erro ao remover música: ${error.message}`);
+    }
   }
 }
