@@ -1,13 +1,14 @@
-import prisma from "../../prisma"
+import prisma from "../../../config/prisma";
 
 import { artistas } from "@prisma/client";
 
 class ArtistasService {
-  
   //Criar
-  async createArtista(data: { nome: string; foto?: string | null }): Promise<artistas> {
+  async createArtista(data: {
+    nome: string;
+    foto?: string | null;
+  }): Promise<artistas> {
     try {
-      
       const novoArtista = await prisma.artistas.create({
         data: {
           nome: data.nome,
@@ -16,19 +17,17 @@ class ArtistasService {
       });
 
       return novoArtista;
-
     } catch (error: any) {
-      
-      if (error.code === 'P2002' && error.meta?.target?.includes('nome')) {
-      console.error("Erro: Tentativa de criar arista com nome duplicado.");
-      throw new Error("Já existe um artista com esse nome");
-    }
+      if (error.code === "P2002" && error.meta?.target?.includes("nome")) {
+        console.error("Erro: Tentativa de criar arista com nome duplicado.");
+        throw new Error("Já existe um artista com esse nome");
+      }
 
-    console.error("Erro ao criar artsita no serviço:", error);
-    throw new Error("Não foi possível criar o artista");
-   }
+      console.error("Erro ao criar artsita no serviço:", error);
+      throw new Error("Não foi possível criar o artista");
+    }
   }
-  
+
   //Buscar
   async findAllArtistas(): Promise<artistas[]> {
     try {
@@ -43,7 +42,7 @@ class ArtistasService {
       throw new Error("Não foi possível buscar os artistas.");
     }
   }
-  
+
   //Buscar por ID
   async findArtistaById(id: number): Promise<artistas | null> {
     try {
@@ -59,9 +58,12 @@ class ArtistasService {
       throw new Error("Não foi possível encontrar o artista.");
     }
   }
-  
+
   //Atualizar
-  async updateArtista(id: number, data: { nome?: string; foto?: string | null }): Promise<artistas> {
+  async updateArtista(
+    id: number,
+    data: { nome?: string; foto?: string | null }
+  ): Promise<artistas> {
     try {
       const artistaAtualizado = await prisma.artistas.update({
         where: { id },
@@ -73,7 +75,7 @@ class ArtistasService {
       throw new Error("Não foi possível atualizar o artista.");
     }
   }
-  
+
   //Deletar
   async deleteArtista(id: number): Promise<artistas> {
     try {
@@ -89,6 +91,5 @@ class ArtistasService {
     }
   }
 }
-
 
 export default new ArtistasService();
