@@ -1,24 +1,24 @@
-import prisma from "../../prisma"
+import prisma from "../../../config/prisma";
 
 export async function criarReproducao(dados: {
-  usuario_id: number,
-  musica_id: number,
-  data_escuta: Date
+  usuario_id: number;
+  musica_id: number;
+  data_escuta: Date;
 }) {
   const reproducao = await prisma.reproduções.create({
-    data: dados
-  })
-  return reproducao
+    data: dados,
+  });
+  return reproducao;
 }
 
 export async function listarReproducoes() {
   const reproducoes = await prisma.reproduções.findMany({
     include: {
       usuarios: true,
-      musicas: true
-    }
-  })
-  return reproducoes
+      musicas: true,
+    },
+  });
+  return reproducoes;
 }
 
 export async function atualizarReproducao(
@@ -26,7 +26,7 @@ export async function atualizarReproducao(
   musica_id: number,
   data_escuta: Date,
   novosDados: {
-    data_escuta?: Date
+    data_escuta?: Date;
   }
 ) {
   const reproducao = await prisma.reproduções.update({
@@ -34,12 +34,12 @@ export async function atualizarReproducao(
       usuario_id_musica_id_data_escuta: {
         usuario_id,
         musica_id,
-        data_escuta
-      }
+        data_escuta,
+      },
     },
-    data: novosDados
-  })
-  return reproducao
+    data: novosDados,
+  });
+  return reproducao;
 }
 
 export async function deletarReproducao(
@@ -52,8 +52,8 @@ export async function deletarReproducao(
       usuario_id_musica_id_data_escuta: {
         usuario_id,
         musica_id,
-        data_escuta
-      }
-    }
-  })
+        data_escuta,
+      },
+    },
+  });
 }
