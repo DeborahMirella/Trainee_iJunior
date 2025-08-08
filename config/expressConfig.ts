@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
+import MusicaRouter from "../src/domains/musicas/controllers/musicaController";
 
 dotenv.config();
 
@@ -18,3 +19,6 @@ app.use(
     extended: true,
   })
 );
+
+app.use("/api/musicas", MusicaRouter);
+app.use("/api/musicaPorId", MusicaRouter);

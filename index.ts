@@ -5,5 +5,5 @@ dotenv.config();
 
 app.listen(process.env.PORT, () => {
   //PORT = "3030"
-  console.log(`Servidor rosteado na porta: ${process.env.PORT}...`);
+  console.log(`Hosteando servidor na porta: ${process.env.PORT}...`);
 });
