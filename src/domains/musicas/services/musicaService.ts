@@ -119,3 +119,5 @@ export class MusicService {
     return musicaDeletada;
   }
 }
+
+export default new MusicService();
