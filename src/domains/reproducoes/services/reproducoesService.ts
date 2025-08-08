@@ -1,4 +1,4 @@
-import prisma from "../../../config/prisma";
+import prisma from "../../../../config/prisma";
 
 export async function criarReproducao(dados: {
   usuario_id: number;

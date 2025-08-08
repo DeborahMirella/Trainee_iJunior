@@ -1,5 +1,5 @@
 import { musicas } from "@prisma/client";
-import prisma from "../../prisma";
+import prisma from "../../../../config/prisma";
 import { Param } from "@prisma/client/runtime/library";
 
 type dadosCriacaoMusica = Omit<musicas, "id">;
