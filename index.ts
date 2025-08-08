@@ -1,12 +1,14 @@
 import ArtistasService from "./src/domains/artistas/artistasService"
 import { criarUsuario, listarUsuarios } from "./src/domains/usuarios/usuariosService"
-import { criarMusica, listarMusicas } from "./src/domains/musicas/musicasService"
+import { MusicService } from "./src/domains/musicas/musicaService"
 import { criarReproducao, listarReproducoes } from "./src/domains/reproducoes/reproducoesService"
+
+const musicService = new MusicService
 
 async function main() {
   await criarUsuario({
-    nome: "Hermes",
-    email: "hermes@gmail.com",
+    nome: "Hermes1",
+    email: "hermes2@gmail.com",
     senha: "123456",
     privilegios: "admin"
   })
@@ -15,7 +17,7 @@ async function main() {
   console.log("Usuários:", usuarios)
 
   const novoArtista = await ArtistasService.createArtista({
-    nome: "Coldplay",
+    nome: "Coldplay1",
     foto: "coldplay.jpg"
   })
   console.log("Artista criado:", novoArtista)
@@ -26,15 +28,15 @@ async function main() {
   await ArtistasService.updateArtista(novoArtista.id, { foto: "coldplay_novo.jpg" })
   console.log("Artista atualizado")
 
-  const novaMusica = await criarMusica({
-    nome: "Yellow",
+  const novaMusica = await musicService.criarMusica({
+    nome: "Paper",
     genero: "Rock",
     album: "Parachutes",
     artista_id: novoArtista.id
   })
   console.log("Música criada:", novaMusica)
 
-  const musicas = await listarMusicas()
+  const musicas = await musicService.listarMusicas()
   console.log("Lista de músicas:", musicas)
 
   const novaReproducao = await criarReproducao({
