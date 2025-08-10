@@ -39,17 +39,11 @@ Clone o repositório:
 
 ```Bash
 
-git clone [URL_DO_VOSSO_REPOSITORIO_AQUI]
-Navegue para a pasta do projeto:
+git clone https://github.com/DeborahMirella/Trainee_iJunior/
 ```
+Navegue para a pasta do projeto e rode: 
 
-```Bash
-
-cd [NOME_DA_PASTA_DO_PROJETO]
-Instale as dependências:
-```
-
-```Bash
+```bash
 
 npm install
 ```
@@ -57,22 +51,29 @@ npm install
 Configuração da Base de Dados
 Este projeto usa SQLite, pelo que não é necessário instalar um servidor de base de dados.
 
-Crie uma cópia do ficheiro .env.example (se existir) e renomeie-a para .env. Se não existir, crie um ficheiro .env e adicione a seguinte linha:
+Crie um ficheiro .env e adicione a seguinte linha:
+```bash
+APP_URL = "http://localhost:3000/"
+PORT = 3030
+DATABASE_URL="file:./dev.db"
+```
 
 Snippet de código
 
 DATABASE_URL="file:./dev.db"
 Execute as migrações do Prisma para criar o ficheiro da base de dados e as tabelas:
 
-Bash
+```Bash
 
 npx prisma migrate dev
+```
 Execução
 Para iniciar a aplicação em modo de desenvolvimento (com reinício automático), execute:
 
-Bash
+```Bash
 
 npm run dev
+```
 A API estará agora a correr e pronta a aceitar pedidos.
 
 👥 Equipa
