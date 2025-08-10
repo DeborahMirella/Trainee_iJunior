@@ -5,26 +5,44 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
     "start": "tsnd --rs --respawn --transpile-only --exit-child index.ts"
   },
+=======
+    "start": "tsnd --rs --respawn --transpile-only --exit-child index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only index.ts"
+},
+>>>>>>> origin/feat/rotas-usuarios-e-reproducoes
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+<<<<<<< HEAD
+=======
+    "@eslint/js": "^9.33.0",
+>>>>>>> origin/feat/rotas-usuarios-e-reproducoes
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
     "@types/node": "^24.1.0",
+    "eslint": "^8.57.1",
+    "globals": "^16.3.0",
     "prisma": "^6.13.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+<<<<<<< HEAD
     "express": "^5.1.0",
     "ts-node-dev": "^2.0.0"
+=======
+    "express": "^5.1.0"
+>>>>>>> origin/feat/rotas-usuarios-e-reproducoes
   }
 }
