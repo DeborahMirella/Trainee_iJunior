@@ -1,4 +1,8 @@
+<<<<<<< HEAD:src/domains/artistas/services/artistasService.ts
 import prisma from "../../../../config/prisma";
+=======
+import prisma from "../../../config/prisma"
+>>>>>>> origin/feat/rotas-usuarios-e-reproducoes:src/domains/artistas/artistasService.ts
 
 import { artistas } from "@prisma/client";
 
