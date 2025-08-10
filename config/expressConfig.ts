@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
 import MusicaRouter from "../src/domains/musicas/controllers/musicaController";
-
+import ArtistaRouter from "../src/domains/artistas/controllers/artistas.index";
 dotenv.config();
 
 export const app: Express = express();
@@ -21,4 +21,4 @@ app.use(
 );
 
 app.use("/api/musicas", MusicaRouter);
-app.use("/api/musicaPorId", MusicaRouter);
+app.use("/api/artistas", ArtistaRouter);
