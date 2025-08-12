@@ -1,5 +1,4 @@
 import prisma from "../../../../config/prisma";
-
 import { artistas } from "@prisma/client";
 
 class ArtistasService {
