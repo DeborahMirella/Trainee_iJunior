@@ -2,10 +2,12 @@ import express, { Express } from "express";
 import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
 import MusicaRouter from "../src/domains/musicas/controllers/musicaController";
+import ArtistaRouter from "../src/domains/artistas/controllers/artistas.index";
+import UsuariosRouter from "../src/domains/usuarios/controllers/index";
+import ReproducoesRouter from "../src/domains/reproducoes/controllers/index"
+export const app: Express = express();
 
 dotenv.config();
-
-export const app: Express = express();
 
 const options: CorsOptions = {
   credentials: true,
@@ -20,5 +22,15 @@ app.use(
   })
 );
 
+// rota de músicas
 app.use("/api/musicas", MusicaRouter);
-app.use("/api/musicaPorId", MusicaRouter);
+
+// rota de artistas
+app.use("/api/artistas", ArtistaRouter);
+
+// rota de usuários
+app.use("/api/usuarios", UsuariosRouter);
+
+// rota de reproduções
+app.use("/api/reproducoes", ReproducoesRouter);
+
