@@ -38,3 +38,15 @@ export async function deletarUsuario(id: number) {
 		where: { id }
 	});
 }
+
+export const visualizarUsuario = async (id: number) => {
+	const usuario = await prisma.usuarios.findUnique({
+		where: { id },
+	});
+
+	if (!usuario) {
+		throw new Error("Usuário não encontrado");
+	}
+
+	return usuario;
+};
