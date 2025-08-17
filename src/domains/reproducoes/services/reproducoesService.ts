@@ -1,59 +1,69 @@
 import prisma from "../../../../config/prisma";
+import { reproduções } from "@prisma/client";
 
-export async function criarReproducao(dados: {
-  usuario_id: number,
-  musica_id: number,
-  data_escuta: Date
-}) {
-	const reproducao = await prisma.reproduções.create({
-		data: dados
-	});
-	return reproducao;
-}
+type DadosCriacaoReproducao = {
+  musica_id: number;
+};
 
-export async function listarReproducoes() {
-	const reproducoes = await prisma.reproduções.findMany({
-		include: {
-			usuarios: true,
-			musicas: true
-		}
-	});
-	return reproducoes;
-}
+class ReproducoesService {
 
-export async function atualizarReproducao(
-	usuario_id: number,
-	musica_id: number,
-	data_escuta: Date,
-	novosDados: {
-    data_escuta?: Date
+  async criarReproducao(
+    usuarioId: number,
+    dados: DadosCriacaoReproducao
+  ): Promise<reproduções> {
+    
+    const musicaExistente = await prisma.musicas.findUnique({
+      where: { id: dados.musica_id },
+    });
+    if (!musicaExistente) {
+      throw new Error("Música não encontrada para registrar a reprodução.");
+    }
+
+    const reproducao = await prisma.reproduções.create({
+      data: {
+        usuario_id: usuarioId, 
+        musica_id: dados.musica_id,
+        data_escuta: new Date(), 
+      },
+    });
+    return reproducao;
   }
-) {
-	const reproducao = await prisma.reproduções.update({
-		where: {
-			usuario_id_musica_id_data_escuta: {
-				usuario_id,
-				musica_id,
-				data_escuta
-			}
-		},
-		data: novosDados
-	});
-	return reproducao;
+
+  async listarReproducoes(): Promise<reproduções[]> {
+    const reproducoes = await prisma.reproduções.findMany({
+      include: {
+        usuarios: {
+          select: { id: true, nome: true, email: true }, // Nunca expor a senha
+        },
+        musicas: {
+          include: { artistas: true },
+        },
+      },
+      orderBy: {
+        data_escuta: 'desc',
+      }
+    });
+    return reproducoes;
+  }
+
+
+  async deletarReproducao(
+    usuario_id: number,
+    musica_id: number,
+    data_escuta: Date
+  ): Promise<reproduções> {
+
+    const reproducaoDeletada = await prisma.reproduções.delete({
+      where: {
+        usuario_id_musica_id_data_escuta: {
+          usuario_id,
+          musica_id,
+          data_escuta,
+        },
+      },
+    });
+    return reproducaoDeletada;
+  }
 }
 
-export async function deletarReproducao(
-	usuario_id: number,
-	musica_id: number,
-	data_escuta: Date
-) {
-	await prisma.reproduções.delete({
-		where: {
-			usuario_id_musica_id_data_escuta: {
-				usuario_id,
-				musica_id,
-				data_escuta
-			}
-		}
-	});
-}
+export default new ReproducoesService();

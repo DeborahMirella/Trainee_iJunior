@@ -1,23 +1,19 @@
 import { musicas } from "@prisma/client";
 import prisma from "../../../../config/prisma";
-import { Param } from "@prisma/client/runtime/library";
 
 type dadosCriacaoMusica = Omit<musicas, "id">;
-type dadosAtualizacaoMusica = Partial<Omit<musicas, "id" | "artistaId">>;
+type dadosAtualizacaoMusica = Partial<Omit<musicas, "id" | "artista_id">>;
+
 export class MusicService {
-  //Create - Criação de uma nova música
+  // Create
   async criarMusica(body: dadosCriacaoMusica) {
     if (!body.nome || !body.artista_id) {
-      //É interessante adicionar o campo duração ao model musicas posteriormente.
-      throw new Error(
-        "Nome e ID  do artista são dados obrigatórios para a criação."
-      );
+      throw new Error("Nome e ID do artista são dados obrigatórios.");
     }
 
     const musicaCriada = await prisma.musicas.create({
       data: {
         nome: body.nome,
-        //duracao: body.duracao,
         album: body.album,
         genero: body.genero,
         artistas: {
@@ -32,14 +28,12 @@ export class MusicService {
     return musicaCriada;
   }
 
-  //READ - CRUD:
-
+  // Read
   async listarMusicas() {
     const musicas = await prisma.musicas.findMany({
       orderBy: { nome: "asc" },
       include: { artistas: true },
     });
-
     return musicas;
   }
 
@@ -47,16 +41,13 @@ export class MusicService {
     if (isNaN(id)) {
       throw new Error("Id da música é inválido.");
     }
-
     const musicaPorId = await prisma.musicas.findUnique({
       where: { id },
       include: { artistas: true },
     });
-
     if (!musicaPorId) {
       throw new Error("Música não encontrada.");
     }
-
     return musicaPorId;
   }
 
@@ -64,56 +55,47 @@ export class MusicService {
     if (!nome) {
       throw new Error("Nome inválido ou vazio.");
     }
-
     const musicasPorNome = await prisma.musicas.findMany({
       where: {
         nome: {
           contains: nome,
-          //Linha removida, Motivo: o sqlLite não suporta a ferramenta mode do findMany.
-          // mode: "insensitive",
         },
       },
       include: { artistas: true },
     });
-
     if (musicasPorNome.length === 0) {
-      throw new Error(`Nenhuma música contendo ${nome} encontrada.`);
+      throw new Error(`Nenhuma música contendo '${nome}' foi encontrada.`);
     }
-
     return musicasPorNome;
   }
-  //async conseguirMusicaPorArtista(){}, preciso de uma funcao do artistaService.
 
-  //Atualizar do CRUD:
-
+  // Update
   async atualizaMusica(id: number, body: dadosAtualizacaoMusica) {
-    await this.conseguirMusicaPorId(id);
-
+    await this.conseguirMusicaPorId(id); // Boa prática para garantir que a música existe
     const musicaAtualizada = await prisma.musicas.update({
-      data: {
-        nome: body.nome,
-        //duracao: body.duracao,
-        genero: body.genero,
-        album: body.album,
-      },
-
-      where: {
-        id: id,
-      },
-
+      data: body,
+      where: { id },
       include: { artistas: true },
     });
-
     return musicaAtualizada;
   }
 
-  //Deletar música - CRUD.
-
+  // Delete
   async deletaMusica(id: number) {
+    // Garante que a música existe antes de tentar deletar
     await this.conseguirMusicaPorId(id);
 
-    const musicaDeletada = await prisma.musicas.delete({
-      where: { id },
+    const musicaDeletada = await prisma.$transaction(async (tx) => {
+
+      await tx.reproduções.deleteMany({
+        where: { musica_id: id },
+      });
+      
+      const musica = await tx.musicas.delete({
+        where: { id },
+      });
+
+      return musica;
     });
 
     return musicaDeletada;

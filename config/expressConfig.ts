@@ -6,6 +6,7 @@ import ArtistaRouter from "../src/domains/artistas/controllers/artistas.index";
 import UsuariosRouter from "../src/domains/usuarios/controllers/index";
 import ReproducoesRouter from "../src/domains/reproducoes/controllers/index"
 export const app: Express = express();
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const options: CorsOptions = {
 };
 
 app.use(cors(options));
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   express.urlencoded({
