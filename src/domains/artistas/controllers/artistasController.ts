@@ -1,56 +1,57 @@
 import { Router, Request, Response, NextFunction } from "express";
-import MusicService from "../services/musicaService";
+import ArtistasService from "../services/artistasService";
 
 const router = Router();
 
-// Criar música
+// Criar artista
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const musicaCriada = await MusicService.criarMusica(req.body);
-		res.status(201).json(musicaCriada);
+		const artistaCriado = await ArtistasService.createArtista(req.body);
+		res.status(201).json(artistaCriado);
 	} catch (error) {
 		next(error);
 	}
 });
 
-// Listar todas as músicas
+// Listar todos os artistas
 router.get("/", async (_req: Request, res: Response, next: NextFunction) => {
 	try {
-		const musicas = await MusicService.listarMusicas();
-		res.status(200).json(musicas);
+		const artistas = await ArtistasService.findAllArtistas();
+		res.status(200).json(artistas);
 	} catch (error) {
 		next(error);
 	}
 });
 
-// Visualizar música por ID
+// Visualizar artista por ID
 router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const id = Number(req.params.id);
-		const musica = await MusicService.conseguirMusicaPorId(id);
-		res.status(200).json(musica);
+		const artista = await ArtistasService.findArtistaById(id);
+		if (!artista) return res.status(404).json({ mensagem: "Artista não encontrado" });
+		res.status(200).json(artista);
 	} catch (error) {
 		next(error);
 	}
 });
 
-// Atualizar música
+// Atualizar artista
 router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const id = Number(req.params.id);
-		const musicaAtualizada = await MusicService.atualizaMusica(id, req.body);
-		res.status(200).json(musicaAtualizada);
+		const artistaAtualizado = await ArtistasService.updateArtista(id, req.body);
+		res.status(200).json(artistaAtualizado);
 	} catch (error) {
 		next(error);
 	}
 });
 
-// Deletar música
+// Deletar artista
 router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const id = Number(req.params.id);
-		const musicaDeletada = await MusicService.deletaMusica(id);
-		res.status(200).json(musicaDeletada);
+		const artistaDeletado = await ArtistasService.deleteArtista(id);
+		res.status(200).json(artistaDeletado);
 	} catch (error) {
 		next(error);
 	}

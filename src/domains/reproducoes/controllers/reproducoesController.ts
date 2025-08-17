@@ -5,13 +5,13 @@ import {
 	atualizarReproducao,
 	deletarReproducao
 } from "../services/reproducoesService";
+import { autenticar, AuthRequest } from "../../../middlewares/auth";
 
 const router = Router();
 
 // Criar reprodução
-router.post("/", async (req, res) => {
+router.post("/", autenticar, async (req: AuthRequest, res) => {
 	try {
-		// Espera que o body tenha usuario_id, musica_id e data_escuta
 		const { usuario_id, musica_id, data_escuta } = req.body;
 
 		if (!usuario_id || !musica_id || !data_escuta) {
@@ -34,7 +34,7 @@ router.post("/", async (req, res) => {
 });
 
 // Listar todas as reproduções
-router.get("/", async (_req, res) => {
+router.get("/", autenticar, async (req, res) => {
 	try {
 		const reproducoes = await listarReproducoes();
 		res.json(reproducoes);
@@ -48,7 +48,7 @@ router.get("/", async (_req, res) => {
 });
 
 // Atualizar reprodução
-router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
+router.put("/:usuario_id/:musica_id/:data_escuta", autenticar, async (req, res) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
 		const novosDados = req.body;
@@ -74,7 +74,7 @@ router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
 });
 
 // Deletar reprodução
-router.delete("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
+router.delete("/:usuario_id/:musica_id/:data_escuta", autenticar, async (req, res) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
 
