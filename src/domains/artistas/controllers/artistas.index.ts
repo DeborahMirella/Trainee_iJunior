@@ -1,89 +1,68 @@
-import { Router } from "express";
+import { NextFunction, Router } from "express";
 
 import ArtistasService from '../services/artistasService';
 
+import statusCodes from "../../../../utils/constants/statusCode";
+
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next: NextFunction) => {
     try {
        
         const novoArtista = await ArtistasService.createArtista(req.body);
-        res.status(201).json(novoArtista);
+        res.status(statusCodes.CREATED).json(novoArtista);
 
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-
-            
-            res.status(400).json({ erro: error.message });
-        } else {
-            res.status(500).json({ erro: "Ocorreu um erro desconhecido ao criar o artista." });
-        }
+    } catch (error) {
+        next(error);
     }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next:NextFunction) => {
     try {
        
         const artistas = await ArtistasService.findAllArtistas();
-        res.status(200).json(artistas);
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            res.status(500).json({ erro: error.message });
-        } else {
-            res.status(500).json({ erro: "Ocorreu um erro desconhecido ao listar os artistas." });
-        }
+        res.status(statusCodes.SUCESS).json(artistas);
+    } catch (error) {
+       next(error)
     }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
         
         const artista = await ArtistasService.findArtistaById(Number(id));
         
         if (!artista) {
-            return res.status(404).json({ erro: "Artista não encontrado." });
+            return res.status(statusCodes.NOT_FOUND).json({ erro: "Artista não encontrado." });
         }
         
-        res.status(200).json(artista);
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            res.status(500).json({ erro: error.message });
-        } else {
-            res.status(500).json({ erro: "Ocorreu um erro desconhecido ao buscar o artista." });
-        }
+        res.status(statusCodes.SUCESS).json(artista);
+    } catch (error) {
+        next(error);
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
         
         const artistaAtualizado = await ArtistasService.updateArtista(Number(id), req.body);
-        res.status(200).json(artistaAtualizado);
-    } catch (error: unknown) {
-      
-        if (error instanceof Error) {
-            res.status(400).json({ erro: error.message });
-        } else {
-            res.status(500).json({ erro: "Ocorreu um erro desconhecido ao atualizar o artista." });
-        }
+        res.status(statusCodes.SUCESS).json(artistaAtualizado);
+    } catch (error) {
+      next(error);
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
        
         await ArtistasService.deleteArtista(Number(id));
-        res.status(204).send(); 
+        res.status(statusCodes.NO_CONTENT).send(); 
 
     } catch (error: unknown) {
-        if (error instanceof Error) {
-            res.status(400).json({ erro: error.message });
-        } else {
-            res.status(500).json({ erro: "Ocorreu um erro desconhecido ao deletar o artista." });
-        }
+       next(error);
     }
 });
 
