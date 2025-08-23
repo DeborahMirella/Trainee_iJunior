@@ -17,8 +17,12 @@ export function errorHandler (err: Error, req: Request, res: Response, next:Next
     if (err instanceof InvalidRouteError) {
         return res.status(statusCodes.NOT_FOUND).json({error : err.message});
     }
-    if (err instanceof NotAuthorizedError ||err instanceof PermissionError) {
+    if (err instanceof PermissionError) {
         return res.status(statusCodes.FORBIDDEN).json({error : err.message});
+    }
+    if (err instanceof NotAuthorizedError) {
+        return res.status(statusCodes.UNAUTHORIZED).json({error: err.message});
+
     }
     if (err instanceof TokenError) {
         return res.status(statusCodes.UNAUTHORIZED).json({error : err.message});
