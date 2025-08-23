@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import MusicService from "../services/musicaService";
 import musicaService from "../services/musicaService";
 import { ExecSyncOptions } from "child_process";
+import statusCodes from "../../../../utils/constants/statusCode"
 
 const router = Router();
 //====== Create ======
@@ -10,7 +11,8 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const musicaNova = await musicaService.criarMusica(req.body);
 
-    res.status(201).json(musicaNova);
+    res.status(statusCodes.CREATED).json(musicaNova);
+
   } catch (error) {
     next(error);
   }
@@ -22,7 +24,9 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const musicas = await MusicService.listarMusicas();
-    res.json(musicas);
+
+    res.status(statusCodes.SUCESS).json(musicas)
+
   } catch (error) {
     next(error);
   }
@@ -34,7 +38,7 @@ router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
     const musicaPorId = await musicaService.conseguirMusicaPorId(
       Number(req.params.id)
     );
-    res.json(musicaPorId);
+    res.status(statusCodes.SUCESS).json(musicaPorId);
   } catch (error) {
     next(error);
   }
@@ -47,7 +51,9 @@ router.get(
       const musicasPorNome = await musicaService.conseguirMusicasPorNome(
         String(req.params.nome)
       );
-      res.json(musicasPorNome);
+
+      res.status(statusCodes.SUCESS).json(musicasPorNome);
+
     } catch (error) {
       next(error);
     }
@@ -67,7 +73,7 @@ router.patch(
         body
       );
 
-      res.status(200).json(musicaAtualizada);
+      res.status(statusCodes.SUCESS).json(musicaAtualizada);
     } catch (error) {
       next(error);
     }
@@ -83,7 +89,7 @@ router.delete(
 
       const musicaDeleteda = await musicaService.deletaMusica(musicaId);
 
-      res.status(200).send();
+      res.status(statusCodes.NO_CONTENT).send();
     } catch (error) {
       next(error);
     }
