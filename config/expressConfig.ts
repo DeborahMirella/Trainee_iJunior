@@ -7,6 +7,7 @@ import UsuariosRouter from "../src/domains/usuarios/controllers/index";
 import ReproducoesRouter from "../src/domains/reproducoes/controllers/index"
 export const app: Express = express();
 import cookieParser from 'cookie-parser';
+import { errorHandler } from "../src/middlewares/errorHandler"
 
 dotenv.config();
 
@@ -36,3 +37,4 @@ app.use("/api/usuarios", UsuariosRouter);
 // rota de reproduções
 app.use("/api/reproducoes", ReproducoesRouter);
 
+app.use(errorHandler);
