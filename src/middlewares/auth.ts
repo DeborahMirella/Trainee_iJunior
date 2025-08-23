@@ -3,14 +3,13 @@ import { sign, verify, SignOptions } from "jsonwebtoken";
 import { compare } from "bcrypt";
 import prisma from "../../config/prisma";
 import { usuarios } from "@prisma/client";
-
-class PermissionError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "PermissionError";
-  }
-}
-
+import {statusCodes} from "../../utils/constants/statusCode"
+import {PermissionError} from "../../errors/PermissionError"
+import { InvalidParamError } from "../../errors/InvalidParamError";
+import {LoginError} from "../../errors/LoginError"
+import { TokenError } from "../../errors/TokenError";
+import { QueryError } from "../../errors/QueryError";
+import { NotAuthorizedError } from "../../errors/NotAuthorizedError";
 
 interface JwtPayload {
   id: number;
@@ -51,7 +50,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new PermissionError("Email e senha são obrigatórios.");
+      throw new InvalidParamError("Email e senha são obrigatórios.");
     }
 
     const user = await prisma.usuarios.findUnique({
@@ -59,18 +58,18 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     });
 
     if (!user) {
-      throw new PermissionError("Email e/ou senha incorretos!");
+      throw new LoginError("Email e/ou senha incorretos!");
     }
 
     const isPasswordMatching = await compare(password, user.senha);
 
     if (!isPasswordMatching) {
-      throw new PermissionError("Email e/ou senha incorretos!");
+      throw new LoginError("Email e/ou senha incorretos!");
     }
 
     generateJWT(user, res);
 
-    res.status(200).json({
+    res.status(statusCodes.SUCESS).json({
       message: "Login realizado com sucesso!",
       user: { id: user.id, nome: user.nome, privilegios: user.privilegios },
     });
@@ -81,33 +80,37 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 
 export function verifyJWT(req: Request, res: Response, next: NextFunction): void {
   const token = req.cookies.jwt;
+  try{
 
   if (!token) {
-    res.status(401).json({ message: "Acesso negado. Nenhum token foi fornecido." });
-    return;
+    throw new TokenError("Acesso negado. Nenhum token foi fornecido.");
   }
 
   const secretKey = process.env.SECRET_KEY;
+
   if (!secretKey) {
-    res.status(500).json({ message: "Erro interno: a chave secreta do servidor não está configurada." });
-    return;
+      throw new Error("Erro interno: A chave secreta do servidor não está configurada.");
   }
 
-  try {
     const decoded = verify(token, secretKey) as { user: JwtPayload };
     req.user = decoded.user; 
+
     next();
   } catch (error) {
-    res.status(401).json({ message: "Token inválido ou expirado." });
+    next(error);
   }
 }
 
 export function checkRole(allowedRoles: Array<string>) {
   return (req: Request, res: Response, next: NextFunction): void => {
+    try {
     if (!req.user || !allowedRoles.includes(req.user.role)) {
-      res.status(403).json({ message: "Acesso proibido. Você não tem permissão para executar esta ação." });
+      throw new PermissionError("Acesso proibido. Você não tem permissão para executar esta ação.");
       return;
     }
     next();
+  } catch (error) {
+    next(error);
+  }
   };
 }
