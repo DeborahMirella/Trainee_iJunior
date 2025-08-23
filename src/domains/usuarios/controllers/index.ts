@@ -1,63 +1,48 @@
-import { Router } from "express";
-import { criarUsuario, listarUsuarios, atualizarUsuario, deletarUsuario } from "../Services/usuariosService";
+import { NextFunction, Router } from "express";
+import { criarUsuario, listarUsuarios, atualizarUsuario, deletarUsuario } from "../services/usuariosService";
+import statusCodes from "../../../../utils/constants/statusCode";
 
 const router = Router();
 
 // Criar usuário
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next: NextFunction) => {
 	try {
 		const novoUsuario = await criarUsuario(req.body);
-		res.status(201).json(novoUsuario);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.CREATED).json(novoUsuario);
+	} catch (error) {
+		next(error);
 	}
 });
 
 // Listar todos os usuários
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next: NextFunction) => {
 	try {
 		const usuarios = await listarUsuarios();
-		res.json(usuarios);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.SUCESS).json(usuarios);
+	} catch (error) {
+	next(error);
 	}
 });
 
 // Atualizar usuário
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
 		const usuarioAtualizado = await atualizarUsuario(Number(id), req.body);
-		res.json(usuarioAtualizado);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.SUCESS).json(usuarioAtualizado);
+	} catch (error) {
+		next(error);
 	}
 });
 
 // Deletar usuário
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
 		await deletarUsuario(Number(id));
-		res.status(204).send();
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.NO_CONTENT).send();
+	} catch (error) {
+		next(error);
 	}
 });
 

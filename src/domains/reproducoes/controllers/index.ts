@@ -1,61 +1,46 @@
-import { Router } from "express";
+import { NextFunction, Router } from "express";
 import {
 	criarReproducao,
 	listarReproducoes,
 	atualizarReproducao,
-	deletarReproducao
-} from "../services/reproducoesService";
-
+	deletarReproducao,
+} from "../services/reproducoesService"
+import statusCodes from "../../../../utils/constants/statusCode"
 const router = Router();
 
 // Criar reprodução
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next: NextFunction) => {
 	try {
 		// Espera que o body tenha usuario_id, musica_id e data_escuta
 		const { usuario_id, musica_id, data_escuta } = req.body;
-
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios" });
-		}
 
 		const novaReproducao = await criarReproducao({
 			usuario_id,
 			musica_id,
 			data_escuta: new Date(data_escuta),
 		});
-		res.status(201).json(novaReproducao);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.CREATED).json(novaReproducao);
+
+	} catch (error) {
+		next(error);
 	}
 });
 
 // Listar todas as reproduções
-router.get("/", async (_req, res) => {
+router.get("/", async (_req, res, next: NextFunction) => {
 	try {
 		const reproducoes = await listarReproducoes();
-		res.json(reproducoes);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.SUCESS).json(reproducoes);
+	} catch (error) {
+		next(error);
 	}
 });
 
 // Atualizar reprodução
-router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
+router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res, next: NextFunction) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
 		const novosDados = req.body;
-
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios nos params" });
-		}
 
 		const reproducaoAtualizada = await atualizarReproducao(
 			Number(usuario_id),
@@ -63,37 +48,26 @@ router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
 			new Date(data_escuta),
 			novosDados
 		);
-		res.json(reproducaoAtualizada);
+		res.status(statusCodes.SUCESS).json(reproducaoAtualizada);
+
 	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		next(error);
 	}
 });
 
 // Deletar reprodução
-router.delete("/:usuario_id/:musica_id/:data_escuta", async (req, res) => {
+router.delete("/:usuario_id/:musica_id/:data_escuta", async (req, res, next: NextFunction) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
-
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios nos params" });
-		}
-
+		
 		await deletarReproducao(
 			Number(usuario_id),
 			Number(musica_id),
 			new Date(data_escuta)
 		);
-		res.status(204).send();
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
+		res.status(statusCodes.NO_CONTENT).send();
+	} catch (error) {
+		next(error);
 	}
 });
 
