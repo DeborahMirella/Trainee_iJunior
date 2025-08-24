@@ -1,100 +1,57 @@
-import { Router } from "express";
-import {
-	criarReproducao,
-	listarReproducoes,
-	atualizarReproducao,
-	deletarReproducao
-} from "../services/reproducoesService";
-import { autenticar, AuthRequest } from "../../../middlewares/auth";
+import { Router, Request, Response } from "express";
 
 const router = Router();
 
-// Criar reprodução
-router.post("/", autenticar, async (req: AuthRequest, res) => {
-	try {
-		const { usuario_id, musica_id, data_escuta } = req.body;
+const reproducoes = [
+	{ id: 1, usuarioId: 1, musicaId: 1, data: "2025-08-01" },
+	{ id: 2, usuarioId: 2, musicaId: 2, data: "2025-08-02" }
+];
 
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios" });
-		}
-
-		const novaReproducao = await criarReproducao({
-			usuario_id,
-			musica_id,
-			data_escuta: new Date(data_escuta),
-		});
-		res.status(201).json(novaReproducao);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
-	}
+// GET /reproducoes
+router.get("/", (req: Request, res: Response) => {
+	return res.json(reproducoes);
 });
 
-// Listar todas as reproduções
-router.get("/", autenticar, async (req, res) => {
-	try {
-		const reproducoes = await listarReproducoes();
-		res.json(reproducoes);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
-	}
+// GET /reproducoes/:id
+router.get("/:id", (req: Request, res: Response) => {
+	const repr = reproducoes.find(r => r.id === Number(req.params.id));
+	if (!repr) return res.status(404).json({ erro: "Reprodução não encontrada" });
+	return res.json(repr);
 });
 
-// Atualizar reprodução
-router.put("/:usuario_id/:musica_id/:data_escuta", autenticar, async (req, res) => {
-	try {
-		const { usuario_id, musica_id, data_escuta } = req.params;
-		const novosDados = req.body;
+// POST /reproducoes
+router.post("/", (req: Request, res: Response) => {
+	const { usuarioId, musicaId, data } = req.body;
+	if (!usuarioId || !musicaId || !data) return res.status(400).json({ erro: "usuarioId, musicaId e data são obrigatórios" });
 
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios nos params" });
-		}
-
-		const reproducaoAtualizada = await atualizarReproducao(
-			Number(usuario_id),
-			Number(musica_id),
-			new Date(data_escuta),
-			novosDados
-		);
-		res.json(reproducaoAtualizada);
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
-	}
+	const nova = { id: reproducoes.length + 1, usuarioId, musicaId, data };
+	reproducoes.push(nova);
+	return res.status(201).json(nova);
 });
 
-// Deletar reprodução
-router.delete("/:usuario_id/:musica_id/:data_escuta", autenticar, async (req, res) => {
-	try {
-		const { usuario_id, musica_id, data_escuta } = req.params;
+// PUT /reproducoes/:id
+router.put("/:id", (req: Request, res: Response) => {
+	const { usuarioId, musicaId, data } = req.body;
+	const idx = reproducoes.findIndex(r => r.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Reprodução não encontrada" });
 
-		if (!usuario_id || !musica_id || !data_escuta) {
-			return res.status(400).json({ erro: "usuario_id, musica_id e data_escuta são obrigatórios nos params" });
-		}
+	reproducoes[idx] = { 
+		...reproducoes[idx], 
+		usuarioId: usuarioId || reproducoes[idx].usuarioId, 
+		musicaId: musicaId || reproducoes[idx].musicaId, 
+		data: data || reproducoes[idx].data 
+	};
 
-		await deletarReproducao(
-			Number(usuario_id),
-			Number(musica_id),
-			new Date(data_escuta)
-		);
-		res.status(204).send();
-	} catch (error: unknown) {
-		if (error instanceof Error) {
-			res.status(400).json({ erro: error.message });
-		} else {
-			res.status(400).json({ erro: "Erro desconhecido" });
-		}
-	}
+	return res.json(reproducoes[idx]);
+});
+
+// DELETE /reproducoes/:id
+router.delete("/:id", (req: Request, res: Response) => {
+	const idx = reproducoes.findIndex(r => r.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Reprodução não encontrada" });
+
+	const removida = reproducoes.splice(idx, 1);
+	return res.json(removida[0]);
 });
 
 export default router;

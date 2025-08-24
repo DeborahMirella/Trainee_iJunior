@@ -1,22 +1,21 @@
 import { Router } from "express";
 import usuariosController from "./domains/usuarios/controllers/usuariosController";
 import artistasController from "./domains/artistas/controllers/artistasController";
-import musicasController from "./domains/musicas/controllers/musicaController";
+import musicasController from "./domains/musicas/controllers/musicasController";
 import reproducoesController from "./domains/reproducoes/controllers/reproducoesController";
-import { autenticar } from "./middlewares/auth";
 
 const routes = Router();
 
 // Rotas de usuários
 routes.use("/usuarios", usuariosController);
 
-// Rotas de artistas (necessário autenticação)
-routes.use("/artistas", autenticar, artistasController);
+// Rotas de artistas
+routes.use("/artistas", artistasController);
 
-// Rotas de músicas (necessário autenticação)
-routes.use("/musicas", autenticar, musicasController);
+// Rotas de músicas
+routes.use("/musicas", musicasController);
 
-// Rotas de reproduções (necessário autenticação)
-routes.use("/reproducoes", autenticar, reproducoesController);
+// Rotas de reproduções
+routes.use("/reproducoes", reproducoesController);
 
 export default routes;

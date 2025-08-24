@@ -1,60 +1,51 @@
-import { Router, Request, Response, NextFunction } from "express";
-import ArtistasService from "../services/artistasService";
+import { Router, Request, Response } from "express";
 
 const router = Router();
 
-// Criar artista
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const artistaCriado = await ArtistasService.createArtista(req.body);
-		res.status(201).json(artistaCriado);
-	} catch (error) {
-		next(error);
-	}
+const artistas = [
+	{ id: 1, nome: "Legião Urbana", genero: "Rock" },
+	{ id: 2, nome: "Anitta", genero: "Pop" }
+];
+
+// GET /artistas
+router.get("/", (req: Request, res: Response) => {
+	return res.json(artistas);
 });
 
-// Listar todos os artistas
-router.get("/", async (_req: Request, res: Response, next: NextFunction) => {
-	try {
-		const artistas = await ArtistasService.findAllArtistas();
-		res.status(200).json(artistas);
-	} catch (error) {
-		next(error);
-	}
+// GET /artistas/:id
+router.get("/:id", (req: Request, res: Response) => {
+	const artista = artistas.find(a => a.id === Number(req.params.id));
+	if (!artista) return res.status(404).json({ erro: "Artista não encontrado" });
+	return res.json(artista);
 });
 
-// Visualizar artista por ID
-router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const id = Number(req.params.id);
-		const artista = await ArtistasService.findArtistaById(id);
-		if (!artista) return res.status(404).json({ mensagem: "Artista não encontrado" });
-		res.status(200).json(artista);
-	} catch (error) {
-		next(error);
-	}
+// POST /artistas
+router.post("/", (req: Request, res: Response) => {
+	const { nome, genero } = req.body;
+	if (!nome || !genero) return res.status(400).json({ erro: "Nome e gênero são obrigatórios" });
+
+	const novo = { id: artistas.length + 1, nome, genero };
+	artistas.push(novo);
+	return res.status(201).json(novo);
 });
 
-// Atualizar artista
-router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const id = Number(req.params.id);
-		const artistaAtualizado = await ArtistasService.updateArtista(id, req.body);
-		res.status(200).json(artistaAtualizado);
-	} catch (error) {
-		next(error);
-	}
+// PUT /artistas/:id
+router.put("/:id", (req: Request, res: Response) => {
+	const { nome, genero } = req.body;
+	const idx = artistas.findIndex(a => a.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Artista não encontrado" });
+
+	artistas[idx] = { ...artistas[idx], nome: nome || artistas[idx].nome, genero: genero || artistas[idx].genero };
+	return res.json(artistas[idx]);
 });
 
-// Deletar artista
-router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const id = Number(req.params.id);
-		const artistaDeletado = await ArtistasService.deleteArtista(id);
-		res.status(200).json(artistaDeletado);
-	} catch (error) {
-		next(error);
-	}
+// DELETE /artistas/:id
+router.delete("/:id", (req: Request, res: Response) => {
+	const idx = artistas.findIndex(a => a.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Artista não encontrado" });
+
+	const removido = artistas.splice(idx, 1);
+	return res.json(removido[0]);
 });
 
 export default router;
