@@ -1,7 +1,7 @@
 import { NextFunction, Router } from "express";
 import usuariosService from "../services/usuariosService";
 import statusCodes from "../../../../utils/constants/statusCode";
-
+import { verifyJWT, checkRole } from "../../../middlewares/auth";
 const router = Router();
 
 // Criar usuário
@@ -15,7 +15,7 @@ router.post("/", async (req, res, next: NextFunction) => {
 });
 
 // Listar todos os usuários
-router.get("/", async (req, res, next: NextFunction) => {
+router.get("/",verifyJWT, async (req, res, next: NextFunction) => {
 	try {
 		const usuarios = await usuariosService.listarUsuarios();
 		res.status(statusCodes.SUCESS).json(usuarios);
@@ -25,7 +25,7 @@ router.get("/", async (req, res, next: NextFunction) => {
 });
 
 // Atualizar usuário
-router.put("/:id", async (req, res, next: NextFunction) => {
+router.put("/:id", verifyJWT, async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
 		const usuarioAtualizado = await usuariosService.atualizarUsuario(Number(id), req.body);
@@ -36,7 +36,7 @@ router.put("/:id", async (req, res, next: NextFunction) => {
 });
 
 // Deletar usuário
-router.delete("/:id", async (req, res, next: NextFunction) => {
+router.delete("/:id", verifyJWT, async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
 		await usuariosService.deletarUsuario(Number(id));

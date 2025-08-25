@@ -4,9 +4,11 @@ import ArtistasService from '../services/artistasService';
 
 import statusCodes from "../../../../utils/constants/statusCode";
 
+import { verifyJWT, checkRole } from "../../../middlewares/auth";
 const router = Router();
 
-router.post("/", async (req, res, next: NextFunction) => {
+//CREATE
+router.post("/", verifyJWT, checkRole(['admin']), async (req, res, next: NextFunction) => {
     try {
        
         const novoArtista = await ArtistasService.createArtista(req.body);
@@ -16,8 +18,8 @@ router.post("/", async (req, res, next: NextFunction) => {
         next(error);
     }
 });
-
-router.get("/", async (req, res, next:NextFunction) => {
+//READ
+router.get("/", verifyJWT, async (req, res, next:NextFunction) => {
     try {
        
         const artistas = await ArtistasService.findAllArtistas();
@@ -27,7 +29,7 @@ router.get("/", async (req, res, next:NextFunction) => {
     }
 });
 
-router.get("/:id", async (req, res, next:NextFunction) => {
+router.get("/:id", verifyJWT, async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
         
@@ -43,7 +45,8 @@ router.get("/:id", async (req, res, next:NextFunction) => {
     }
 });
 
-router.put("/:id", async (req, res, next:NextFunction) => {
+//UPDATE
+router.put("/:id", verifyJWT, checkRole(['admin']), async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
         
@@ -54,7 +57,8 @@ router.put("/:id", async (req, res, next:NextFunction) => {
     }
 });
 
-router.delete("/:id", async (req, res, next:NextFunction) => {
+//DELETE
+router.delete("/:id", verifyJWT, checkRole(['admin']), async (req, res, next:NextFunction) => {
     try {
         const { id } = req.params;
        
