@@ -27,7 +27,7 @@ function generateJWT(user: usuarios, res: Response): void {
   const secretKey = process.env.SECRET_KEY;
   if (!secretKey) {
     console.error("ERRO CRÍTICO: A variável de ambiente SECRET_KEY para JWT não foi definida.");
-    throw new Error("Erro interno no servidor.");
+    throw new QueryError("Erro interno no servidor.");
   }
 
   const expiresInSeconds = 3600; 
@@ -89,7 +89,7 @@ export function verifyJWT(req: Request, res: Response, next: NextFunction): void
   const secretKey = process.env.SECRET_KEY;
 
   if (!secretKey) {
-      throw new Error("Erro interno: A chave secreta do servidor não está configurada.");
+      throw new QueryError("Erro interno: A chave secreta do servidor não está configurada.");
   }
 
     const decoded = verify(token, secretKey) as { user: JwtPayload };
