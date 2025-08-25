@@ -41,8 +41,8 @@ export class MusicService {
       include: { artistas: true },
     });
 
-    return musicaCriada;
-  }
+		return musicaCriada;
+	}
 
   // Read
   async listarMusicas() {
@@ -115,8 +115,9 @@ export class MusicService {
       return musica;
     });
 
-    return musicaDeletada;
-  }
+		return musicaDeletada;
+	}
 }
 
+// Exporta uma instância pronta para uso
 export default new MusicService();

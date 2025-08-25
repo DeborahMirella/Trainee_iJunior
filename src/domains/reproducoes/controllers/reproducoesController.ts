@@ -1,17 +1,18 @@
 import { NextFunction, Router } from "express";
 import reproducoesService from "../services/reproducoesService";
-import statusCodes from "../../../../utils/constants/statusCode"
+import statusCodes from "../../../../utils/constants/statusCode";
+import { verifyJWT } from "../../../middlewares/auth";
 const router = Router();
 
 // Criar reprodução
-router.post("/", async (req, res, next: NextFunction) => {
+router.post("/", verifyJWT, async (req, res, next: NextFunction) => {
 	try {
-		// Espera que o body tenha usuario_id, musica_id e data_escuta
 		const { usuario_id, musica_id, data_escuta } = req.body;
 
 		const novaReproducao = await reproducoesService.criarReproducao({
 			usuario_id,
 			musica_id,
+			data_escuta,
 		});
 		res.status(statusCodes.CREATED).json(novaReproducao);
 
@@ -21,7 +22,7 @@ router.post("/", async (req, res, next: NextFunction) => {
 });
 
 // Listar todas as reproduções
-router.get("/", async (_req, res, next: NextFunction) => {
+router.get("/", verifyJWT, async (_req, res, next: NextFunction) => {
 	try {
 		const reproducoes = await reproducoesService.listarReproducoes();
 		res.status(statusCodes.SUCESS).json(reproducoes);
@@ -31,7 +32,7 @@ router.get("/", async (_req, res, next: NextFunction) => {
 });
 
 // Atualizar reprodução
-router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res, next: NextFunction) => {
+router.put("/:usuario_id/:musica_id/:data_escuta", verifyJWT, async (req, res, next: NextFunction) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
 		const novosDados = req.body;
@@ -50,7 +51,7 @@ router.put("/:usuario_id/:musica_id/:data_escuta", async (req, res, next: NextFu
 });
 
 // Deletar reprodução
-router.delete("/:usuario_id/:musica_id/:data_escuta", async (req, res, next: NextFunction) => {
+router.delete("/:usuario_id/:musica_id/:data_escuta", verifyJWT, async (req, res, next: NextFunction) => {
 	try {
 		const { usuario_id, musica_id, data_escuta } = req.params;
 		

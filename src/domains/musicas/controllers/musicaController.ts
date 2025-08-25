@@ -8,7 +8,6 @@ import { checkRole } from "../../../middlewares/auth";
 import { verifyJWT } from "../../../middlewares/auth";
 
 const router = Router();
-//====== Create ======
 
 router.post("/", verifyJWT, checkRole(['admin']), async (req: Request, res: Response, next: NextFunction) => {
   try {

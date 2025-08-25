@@ -7,6 +7,7 @@ import usuariosService from "../../usuarios/services/usuariosService";
 type DadosCriacaoReproducao = {
   usuario_id : number;
   musica_id: number;
+  data_escuta: number;
 };
 
 class ReproducoesService {
