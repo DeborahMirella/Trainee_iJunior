@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2022", // Usa uma versão moderna do JavaScript como alvo
-    "module": "commonjs", // O sistema de módulos padrão do Node.js
-    "outDir": "./dist", // Pasta para onde o código compilado (.js) vai
-    //"rootDir": "./src",               // Pasta onde o seu código TypeScript (.ts) está
-    "moduleResolution": "node", // Como o TypeScript procura os módulos
-    "resolveJsonModule": true, // Permite importar ficheiros .json
 
-    "esModuleInterop": true, // Essencial para compatibilidade entre módulos
-    "forceConsistentCasingInFileNames": true, // Evita erros de maiúsculas/minúsculas nos nomes dos ficheiros
-
-    "strict": true, // Ativa todas as verificações rigorosas de tipo
-    "skipLibCheck": true // Pula a verificação de tipos nos ficheiros de declaração (.d.ts)
+    "target": "ES2017",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"], // Diz ao TypeScript para compilar tudo o que está dentro da pasta 'src'
-  "exclude": ["node_modules", "dist"] // Diz ao TypeScript para ignorar estas pastas
+  "include": ["src/**/*", "index.ts"]
 }
