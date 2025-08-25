@@ -1,6 +1,11 @@
 import prisma from "../../../../config/prisma";
 import { usuarios, TipoPrivilegio } from "@prisma/client";
 import * as bcrypt from "bcrypt";
+import { NotFoundError } from "../../../../errors/NotFoundError";
+import { ConflictError } from "../../../../errors/ConflictError";
+import { QueryError } from "../../../../errors/QueryError";
+import musicaService from "../../musicas/services/musicaService";
+import { InvalidParamError } from "../../../../errors/InvalidParamError";
 
 
 type CreateUserData = {
@@ -47,10 +52,9 @@ class UsuariosService {
       return novoUsuario;
     } catch (error: any) {
       if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        throw new Error("Este email já está em uso.");
+        throw new ConflictError("Este email já está em uso.");
       }
-      console.error("Erro ao criar usuário:", error);
-      throw new Error("Não foi possível criar o usuário.");
+      throw new QueryError("Erro interno no servidor.");
     }
   }
 
@@ -67,18 +71,19 @@ class UsuariosService {
       });
       return usuarios;
     } catch (error) {
-      console.error("Erro ao listar usuários:", error);
-      throw new Error("Não foi possível buscar os usuários.");
+      throw new QueryError("Não foi possível buscar os usuários.");
     }
   }
 
   async atualizarUsuario(id: number, dados: UpdateUserData): Promise<Omit<usuarios, 'senha'>> {
-    try {
       const dadosParaAtualizar: any = { ...dados };
 
       if (dados.senha) {
         dadosParaAtualizar.senha = await encryptPassword(dados.senha);
       }
+
+      this.getUserById(id);
+
 
       const usuarioAtualizado = await prisma.usuarios.update({
         where: { id },
@@ -91,18 +96,15 @@ class UsuariosService {
           privilegios: true, 
         },
       });
+
       return usuarioAtualizado;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new Error(`Usuário com ID ${id} não encontrado.`);
-      }
-      console.error(`Erro ao atualizar usuário com ID ${id}:`, error);
-      throw new Error("Não foi possível atualizar o usuário.");
-    }
+
   }
 
   async deletarUsuario(id: number): Promise<Omit<usuarios, 'senha'>> {
-    try {
+    
+    this.getUserById(id);
+
       const usuarioDeletado = await prisma.usuarios.delete({
         where: { id },
         select: {
@@ -114,13 +116,23 @@ class UsuariosService {
         },
       });
       return usuarioDeletado;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new Error(`Usuário com ID ${id} não encontrado.`);
-      }
-      console.error(`Erro ao deletar usuário com ID ${id}:`, error);
-      throw new Error("Não foi possível deletar o usuário.");
+
+  }
+
+  async getUserById(id: number) {
+    if(isNaN(id)){
+      throw new InvalidParamError("Id inválido.");
     }
+      const userById = await prisma.usuarios.findUnique({
+        where: { id },
+      });
+
+      if(!userById) {
+        throw new NotFoundError(`Usuário com id ${id} não encontrado.`)
+
+      }
+
+      return userById;
   }
 }
 

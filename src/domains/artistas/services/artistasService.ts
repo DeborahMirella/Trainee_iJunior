@@ -1,5 +1,9 @@
 import prisma from "../../../../config/prisma";
 import { artistas } from "@prisma/client";
+import { InvalidParamError } from "../../../../errors/InvalidParamError";
+import { ConflictError } from "../../../../errors/ConflictError";
+import { QueryError } from "../../../../errors/QueryError";
+import { NotFoundError } from "../../../../errors/NotFoundError";
 
 class ArtistasService {
   // Criar
@@ -17,45 +21,45 @@ class ArtistasService {
       return novoArtista;
     } catch (error: any) {
       if (error.code === "P2002" && error.meta?.target?.includes("nome")) {
-        throw new Error("Já existe um artista com esse nome");
+        throw new ConflictError("Já existe um artista com esse nome");
       }
       console.error("Erro ao criar artista no serviço:", error);
-      throw new Error("Não foi possível criar o artista");
+      throw new QueryError("Não foi possível criar o artista");
     }
   }
 
   // Buscar todos
   async findAllArtistas(): Promise<artistas[]> {
-    try {
       const todosArtistas = await prisma.artistas.findMany({
         include: {
           musicas: true,
         },
       });
-      return todosArtistas;
-    } catch (error) {
-      console.error("Erro ao buscar todos os artistas:", error);
-      throw new Error("Não foi possível buscar os artistas.");
+
+    if(!todosArtistas) {
+      throw new QueryError("Não foi possível buscar os artistas.");
     }
+
+      return todosArtistas;
   }
 
   // Buscar por ID
   async findArtistaById(id: number): Promise<artistas | null> {
-    try {
+    if (isNaN(id)){
+      throw new InvalidParamError('Id do artista inválido.');
+    }
       const artista = await prisma.artistas.findUnique({
         where: { id },
         include: {
           musicas: true,
         },
       });
+
       if (!artista) {
-        throw new Error("Artista não encontrado.");
+        throw new NotFoundError(`Artista com ${id } não encontrado. Não foi possível buscar artista.`);
       }
+
       return artista;
-    } catch (error: any) {
-      console.error(`Erro ao buscar o artista com ID ${id}:`, error);
-      throw new Error(error.message || "Não foi possível encontrar o artista.");
-    }
   }
 
   // Atualizar
@@ -63,41 +67,33 @@ class ArtistasService {
     id: number,
     data: { nome?: string; foto?: string | null }
   ): Promise<artistas> {
-    try {
+    this.findArtistaById(id);
+    
       const artistaAtualizado = await prisma.artistas.update({
         where: { id },
         data: data,
       });
       return artistaAtualizado;
-    } catch (error: any) {
-      // Prisma lança o erro P2025 quando o registro a ser atualizado não existe.
-      if (error.code === 'P2025') {
-        throw new Error(`Artista com ID ${id} não encontrado para atualização.`);
-      }
-      console.error(`Erro ao atualizar o artista com ID ${id}:`, error);
-      throw new Error("Não foi possível atualizar o artista.");
-    }
+    
   }
 
   // Deletar
   async deleteArtista(id: number): Promise<artistas> {
-    try {
-      
+      if(isNaN(id)){
+        throw new InvalidParamError("Id do artista inválido.");
+      }
       const artistaDeletado = await prisma.$transaction(async (tx) => {
         
         const artistaExistente = await tx.artistas.findUnique({ where: { id } });
         if (!artistaExistente) {
-          throw new Error(`Artista com ID ${id} não encontrado para deleção.`);
+          throw new NotFoundError(`Artista com ID ${id} não encontrado para deleção.`);
         }
         await tx.musicas.deleteMany({ where: { artista_id: id } });
         const artista = await tx.artistas.delete({ where: { id } });
         return artista;
       });
       return artistaDeletado;
-    } catch (error: any) {
-      console.error(`Erro ao deletar o artista com ID ${id}:`, error);
-      throw new Error(error.message || "Não foi possível deletar o artista.");
-    }
+    
   }
 }
 

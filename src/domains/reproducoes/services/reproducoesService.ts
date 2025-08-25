@@ -1,27 +1,27 @@
 import prisma from "../../../../config/prisma";
 import { reproduções } from "@prisma/client";
-
+import { NotFoundError } from "../../../../errors/NotFoundError";
+import musicaService from "../../musicas/services/musicaService";
+import { InvalidParamError } from "../../../../errors/InvalidParamError";
+import usuariosService from "../../usuarios/services/usuariosService";
 type DadosCriacaoReproducao = {
+  usuario_id : number;
   musica_id: number;
 };
 
 class ReproducoesService {
 
   async criarReproducao(
-    usuarioId: number,
     dados: DadosCriacaoReproducao
   ): Promise<reproduções> {
     
-    const musicaExistente = await prisma.musicas.findUnique({
-      where: { id: dados.musica_id },
-    });
-    if (!musicaExistente) {
-      throw new Error("Música não encontrada para registrar a reprodução.");
-    }
+
+    usuariosService.getUserById(dados.usuario_id)
+    musicaService.conseguirMusicaPorId(dados.musica_id);
 
     const reproducao = await prisma.reproduções.create({
       data: {
-        usuario_id: usuarioId, 
+        usuario_id: dados.usuario_id, 
         musica_id: dados.musica_id,
         data_escuta: new Date(), 
       },
@@ -46,12 +46,39 @@ class ReproducoesService {
     return reproducoes;
   }
 
+  async atualizarReproducao(
+	  usuario_id: number,
+	  musica_id: number,
+	  data_escuta: Date,
+	  novosDados: {
+    data_escuta?: Date
+    }
+  ) {
+
+  usuariosService.getUserById(usuario_id);
+  musicaService.conseguirMusicaPorId(musica_id);
+
+	  const reproducao = await prisma.reproduções.update({
+		  where: {
+			  usuario_id_musica_id_data_escuta: {
+				usuario_id,
+				musica_id,
+				data_escuta
+			  }
+	  	},
+		  data: novosDados
+	  });
+	  return reproducao;
+  }
 
   async deletarReproducao(
     usuario_id: number,
     musica_id: number,
     data_escuta: Date
   ): Promise<reproduções> {
+
+    musicaService.conseguirMusicaPorId(musica_id);
+    usuariosService.getUserById(usuario_id);
 
     const reproducaoDeletada = await prisma.reproduções.delete({
       where: {
@@ -62,6 +89,7 @@ class ReproducoesService {
         },
       },
     });
+
     return reproducaoDeletada;
   }
 }
