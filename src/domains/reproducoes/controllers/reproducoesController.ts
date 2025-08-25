@@ -53,3 +53,5 @@ router.put("/:id", (req: Request, res: Response) => {
 
 	return res.json(reproducoes[idx]);
 });
+
+export default router;
