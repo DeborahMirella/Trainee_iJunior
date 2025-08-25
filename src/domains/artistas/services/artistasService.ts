@@ -12,6 +12,9 @@ class ArtistasService {
     foto?: string | null;
   }): Promise<artistas> {
     try {
+      if(!data.nome){
+        throw new InvalidParamError("Nome inválido.");
+      }
       const novoArtista = await prisma.artistas.create({
         data: {
           nome: data.nome,
@@ -68,7 +71,7 @@ class ArtistasService {
     data: { nome?: string; foto?: string | null }
   ): Promise<artistas> {
     this.findArtistaById(id);
-    
+
       const artistaAtualizado = await prisma.artistas.update({
         where: { id },
         data: data,

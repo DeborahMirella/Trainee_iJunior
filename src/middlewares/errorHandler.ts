@@ -1,13 +1,11 @@
 import { Request, Response, NextFunction} from 'express';
-import "../../errors";
-import "../../utils/constants/statusCode";
+import statusCodes from '../../utils/constants/statusCode';
 import { InvalidParamError } from '../../errors/InvalidParamError';
 import { InvalidRouteError} from "../../errors/InvalidRouteError"
 import { LoginError } from '../../errors/LoginError';
 import { NotAuthorizedError } from '../../errors/NotAuthorizedError';
 import { PermissionError } from '../../errors/PermissionError';
 import { QueryError } from '../../errors/QueryError';
-import statusCodes from '../../utils/constants/statusCode';
 import {TokenError} from '../../errors/TokenError';
 import {ConflictError} from '../../errors/ConflictError';
 import { NotFoundError } from '../../errors/NotFoundError';
@@ -41,7 +39,7 @@ export function errorHandler (err: Error, req: Request, res: Response, next:Next
     if (err instanceof NotFoundError) {
         return res.status(statusCodes.NOT_FOUND).json({error: err.message});
     }
-    
+
     console.error("Erro inesperado: ", err);
     return res.status(statusCodes.INTERNAL_SERVER_ERROR).json({erro: "Erro interno no servidor."})
 }

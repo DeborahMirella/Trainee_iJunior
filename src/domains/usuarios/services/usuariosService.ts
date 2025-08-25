@@ -30,6 +30,16 @@ class UsuariosService {
 
   async criarUsuario(dados: CreateUserData): Promise<Omit<usuarios, 'senha'>> {
     try {
+      if(!dados.nome) {
+        throw new InvalidParamError("Nome inválido.");
+      }
+      if (!dados.senha) {
+        throw new InvalidParamError("Senha inválida.");
+      }
+      if(!dados.email) {
+        throw new InvalidParamError("Email inválido.");
+      }
+
       
       const hashedPassword = await encryptPassword(dados.senha);
 
