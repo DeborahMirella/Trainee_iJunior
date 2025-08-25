@@ -114,3 +114,22 @@ export function checkRole(allowedRoles: Array<string>) {
   }
   };
 }
+
+/* export function checkMusicOwnerShipOrAdmin(req: Request, res: Response, next: NextFunction) {
+  try{
+    const user = req.user;
+
+    if (!user) {
+      throw new NotAuthorizedError("Usuário não autenticado.");
+    }
+
+    if (user?.role === 'admin') {
+      return next();
+    }
+    const music = await 
+  
+  next();
+  } catch (error) {
+    next(error);
+  }
+}*/

@@ -1,5 +1,5 @@
 import { NextFunction, Router } from "express";
-import { criarUsuario, listarUsuarios, atualizarUsuario, deletarUsuario } from "../services/usuariosService";
+import usuariosService from "../services/usuariosService";
 import statusCodes from "../../../../utils/constants/statusCode";
 
 const router = Router();
@@ -7,7 +7,7 @@ const router = Router();
 // Criar usuário
 router.post("/", async (req, res, next: NextFunction) => {
 	try {
-		const novoUsuario = await criarUsuario(req.body);
+		const novoUsuario = await usuariosService.criarUsuario(req.body);
 		res.status(statusCodes.CREATED).json(novoUsuario);
 	} catch (error) {
 		next(error);
@@ -17,7 +17,7 @@ router.post("/", async (req, res, next: NextFunction) => {
 // Listar todos os usuários
 router.get("/", async (req, res, next: NextFunction) => {
 	try {
-		const usuarios = await listarUsuarios();
+		const usuarios = await usuariosService.listarUsuarios();
 		res.status(statusCodes.SUCESS).json(usuarios);
 	} catch (error) {
 	next(error);
@@ -28,7 +28,7 @@ router.get("/", async (req, res, next: NextFunction) => {
 router.put("/:id", async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
-		const usuarioAtualizado = await atualizarUsuario(Number(id), req.body);
+		const usuarioAtualizado = await usuariosService.atualizarUsuario(Number(id), req.body);
 		res.status(statusCodes.SUCESS).json(usuarioAtualizado);
 	} catch (error) {
 		next(error);
@@ -39,7 +39,7 @@ router.put("/:id", async (req, res, next: NextFunction) => {
 router.delete("/:id", async (req, res, next: NextFunction) => {
 	try {
 		const { id } = req.params;
-		await deletarUsuario(Number(id));
+		await usuariosService.deletarUsuario(Number(id));
 		res.status(statusCodes.NO_CONTENT).send();
 	} catch (error) {
 		next(error);
