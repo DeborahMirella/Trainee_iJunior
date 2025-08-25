@@ -1,51 +1,115 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
+import MusicService from "../services/musicaService";
+import musicaService from "../services/musicaService";
+//import { ExecSyncOptions } from "child_process";
+import statusCodes from "../../../../utils/constants/statusCode";
+//import { verify } from "crypto";
+import { checkRole } from "../../../middlewares/auth";
+import { verifyJWT } from "../../../middlewares/auth";
 
 const router = Router();
 
-const musicas = [
-	{ id: 1, titulo: "Tempo Perdido", artistaId: 1 },
-	{ id: 2, titulo: "Show das Poderosas", artistaId: 2 }
-];
+router.post(
+	"/",
+	verifyJWT,
+	checkRole(["admin"]),
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicaNova = await musicaService.criarMusica(req.body);
 
-// GET /musicas
-router.get("/", (req: Request, res: Response) => {
-	return res.json(musicas);
-});
+			res.status(statusCodes.CREATED).json(musicaNova);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
 
-// GET /musicas/:id
-router.get("/:id", (req: Request, res: Response) => {
-	const musica = musicas.find(m => m.id === Number(req.params.id));
-	if (!musica) return res.status(404).json({ erro: "Música não encontrada" });
-	return res.json(musica);
-});
+//====== Read ========
 
-// POST /musicas
-router.post("/", (req: Request, res: Response) => {
-	const { titulo, artistaId } = req.body;
-	if (!titulo || !artistaId) return res.status(400).json({ erro: "Título e artistaId são obrigatórios" });
+//Retorna todas as musicas
+router.get(
+	"/",
+	verifyJWT,
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicas = await MusicService.listarMusicas();
 
-	const nova = { id: musicas.length + 1, titulo, artistaId };
-	musicas.push(nova);
-	return res.status(201).json(nova);
-});
+			res.status(statusCodes.SUCESS).json(musicas);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
 
-// PUT /musicas/:id
-router.put("/:id", (req: Request, res: Response) => {
-	const { titulo, artistaId } = req.body;
-	const idx = musicas.findIndex(m => m.id === Number(req.params.id));
-	if (idx === -1) return res.status(404).json({ erro: "Música não encontrada" });
+//Consegue música por id
+router.get(
+	"/:id",
+	verifyJWT,
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicaPorId = await musicaService.conseguirMusicaPorId(
+				Number(req.params.id)
+			);
+			res.status(statusCodes.SUCESS).json(musicaPorId);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
+//Consegue músicas por nome
+router.get(
+	"/nome/:nome",
+	verifyJWT,
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicasPorNome = await musicaService.conseguirMusicasPorNome(
+				String(req.params.nome)
+			);
 
-	musicas[idx] = { ...musicas[idx], titulo: titulo || musicas[idx].titulo, artistaId: artistaId || musicas[idx].artistaId };
-	return res.json(musicas[idx]);
-});
+			res.status(statusCodes.SUCESS).json(musicasPorNome);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
 
-// DELETE /musicas/:id
-router.delete("/:id", (req: Request, res: Response) => {
-	const idx = musicas.findIndex(m => m.id === Number(req.params.id));
-	if (idx === -1) return res.status(404).json({ erro: "Música não encontrada" });
+//====== Update ======
 
-	const removida = musicas.splice(idx, 1);
-	return res.json(removida[0]);
-});
+router.patch(
+	"/:id",
+	verifyJWT,
+	checkRole(["admin"]),
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicaId = Number(req.params.id);
+			const body = req.body;
+			const musicaAtualizada = await musicaService.atualizaMusica(
+				musicaId,
+				body
+			);
 
+			res.status(statusCodes.SUCESS).json(musicaAtualizada);
+		} catch (error) {
+			next(error);
+		}
+	}
+);
+//====== Delete=======
+
+router.delete(
+	"/:id",
+	verifyJWT,
+	checkRole(["admin"]),
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const musicaId = Number(req.params.id);
+
+			await musicaService.deletaMusica(musicaId);
+
+			res.status(statusCodes.NO_CONTENT).send();
+		} catch (error) {
+			next(error);
+		}
+	}
+);
 export default router;

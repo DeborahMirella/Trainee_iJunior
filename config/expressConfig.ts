@@ -5,7 +5,6 @@ import routes from "../src/routes";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "../src/middlewares/errorHandler";
 
-
 dotenv.config();
 
 export const app: Express = express();
@@ -22,4 +21,3 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", routes);
 app.use(errorHandler);
-
