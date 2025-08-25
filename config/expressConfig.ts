@@ -2,6 +2,9 @@ import express, { Express } from "express";
 import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
 import routes from "../src/routes";
+import cookieParser from "cookie-parser";
+import { errorHandler } from "../src/middlewares/errorHandler";
+
 
 dotenv.config();
 
@@ -13,8 +16,10 @@ const options: CorsOptions = {
 };
 
 app.use(cors(options));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Todas as rotas centralizadas
 app.use("/api", routes);
+app.use(errorHandler);
+

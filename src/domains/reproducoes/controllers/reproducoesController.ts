@@ -1,57 +1,107 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
+import { verifyJWT } from "../../../middlewares/auth";
+import statusCodes from "../../../../utils/constants/statusCode"; 
+import { InvalidParamError} from "../../../../errors/InvalidParamError";
+import { NotFoundError } from "../../../../errors/NotFoundError";
 
 const router = Router();
 
+// --- LÓGICA MOCK ---
 const reproducoes = [
 	{ id: 1, usuarioId: 1, musicaId: 1, data: "2025-08-01" },
 	{ id: 2, usuarioId: 2, musicaId: 2, data: "2025-08-02" }
 ];
+let proximoId = 3; // Lógica de auto-incremento robusta para o mock
+// -------------------------------------------------------------
 
-// GET /reproducoes
-router.get("/", (req: Request, res: Response) => {
-	return res.json(reproducoes);
+
+//Get /reproducoes
+router.get("/", verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		res.status(statusCodes.SUCESS).json(reproducoes);
+	} catch (error) {
+		next(error);
+	}
 });
 
-// GET /reproducoes/:id
-router.get("/:id", (req: Request, res: Response) => {
-	const repr = reproducoes.find(r => r.id === Number(req.params.id));
-	if (!repr) return res.status(404).json({ erro: "Reprodução não encontrada" });
-	return res.json(repr);
+//Ger /reproducoes/:id
+router.get("/:id", verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const idProcurado = Number(req.params.id);
+
+		if (isNaN(idProcurado) || idProcurado <= 0) {
+			throw new InvalidParamError("O ID da reprodução deve ser um número inteiro positivo.");
+		}
+
+		const repr = reproducoes.find(r => r.id === idProcurado);
+
+		if (!repr) {
+			throw new NotFoundError("Reprodução não encontrada");
+		}
+		res.status(statusCodes.SUCESS).json(repr);
+	} catch (error) {
+		next(error);
+	}
 });
 
-// POST /reproducoes
-router.post("/", (req: Request, res: Response) => {
-	const { usuarioId, musicaId, data } = req.body;
-	if (!usuarioId || !musicaId || !data) return res.status(400).json({ erro: "usuarioId, musicaId e data são obrigatórios" });
+// Create
+router.post("/", verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const { usuarioId, musicaId, data } = req.body;
 
-	const nova = { id: reproducoes.length + 1, usuarioId, musicaId, data };
-	reproducoes.push(nova);
-	return res.status(201).json(nova);
+		if (!usuarioId || !musicaId || !data) {
+			throw new InvalidParamError("usuarioId, musicaId e data são obrigatórios");
+		}
+		const novaReproducao = { id: proximoId++, usuarioId, musicaId, data };
+		reproducoes.push(novaReproducao);
+
+		res.status(statusCodes.CREATED).json(novaReproducao);
+	} catch (error) {
+		next(error);
+	}
 });
 
-// PUT /reproducoes/:id
-router.put("/:id", (req: Request, res: Response) => {
-	const { usuarioId, musicaId, data } = req.body;
-	const idx = reproducoes.findIndex(r => r.id === Number(req.params.id));
-	if (idx === -1) return res.status(404).json({ erro: "Reprodução não encontrada" });
+// Update
+router.put("/:id", verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const idProcurado = Number(req.params.id);
+		const { usuarioId, musicaId, data } = req.body;
 
-	reproducoes[idx] = { 
-		...reproducoes[idx], 
-		usuarioId: usuarioId || reproducoes[idx].usuarioId, 
-		musicaId: musicaId || reproducoes[idx].musicaId, 
-		data: data || reproducoes[idx].data 
-	};
+		const indice = reproducoes.findIndex(r => r.id === idProcurado);
 
-	return res.json(reproducoes[idx]);
+		if (indice === -1) {
+			throw new NotFoundError("Reprodução não encontrada");
+		}
+
+		const reproducaoExistente = reproducoes[indice];
+		reproducoes[indice] = { 
+			...reproducaoExistente, 
+			usuarioId: usuarioId || reproducaoExistente.usuarioId, 
+			musicaId: musicaId || reproducaoExistente.musicaId, 
+			data: data || reproducaoExistente.data 
+		};
+
+		res.status(statusCodes.SUCESS).json(reproducoes[indice]);
+	} catch (error) {
+		next(error);
+	}
 });
 
-// DELETE /reproducoes/:id
-router.delete("/:id", (req: Request, res: Response) => {
-	const idx = reproducoes.findIndex(r => r.id === Number(req.params.id));
-	if (idx === -1) return res.status(404).json({ erro: "Reprodução não encontrada" });
+//Delete
+router.delete("/:id", verifyJWT, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const idProcurado = Number(req.params.id);
+		const indice = reproducoes.findIndex(r => r.id === idProcurado);
+		if (indice === -1) {
+			throw new NotFoundError("Reprodução não encontrada");
+		}
 
-	const removida = reproducoes.splice(idx, 1);
-	return res.json(removida[0]);
+		res.status(statusCodes.NO_CONTENT).send();
+		reproducoes.splice(indice, 1);
+	
+	} catch (error) {
+		next(error);
+	}
 });
 
 export default router;
