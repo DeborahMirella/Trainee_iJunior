@@ -1,132 +1,63 @@
 import { Request, Response, NextFunction } from "express";
-import { sign, verify, SignOptions } from "jsonwebtoken";
-import { compare } from "bcrypt";
-import prisma from "../../config/prisma";
-import { usuarios } from "@prisma/client";
-import { statusCodes } from "../../utils/constants/statusCode";
-import { PermissionError } from "../../errors/PermissionError";
-import { InvalidParamError } from "../../errors/InvalidParamError";
-import { LoginError } from "../../errors/LoginError";
-import { TokenError } from "../../errors/TokenError";
-import { QueryError } from "../../errors/QueryError";
-
+import { sign, verify } from "jsonwebtoken";
 interface JwtPayload {
-	id: number;
-	role: string;
-	nome: string;
+    id: number;
+    role: string;
+    nome: string;
 }
 
-function generateJWT(user: usuarios, res: Response): void {
-	const body: JwtPayload = {
-		id: user.id,
-		role: user.privilegios,
-		nome: user.nome,
-	};
+export function generateJWT(user: { id: number; nome: string; privilegios: string }, res: Response) {
+	const payload: JwtPayload = { id: user.id, nome: user.nome, role: user.privilegios };
 
-	const secretKey = process.env.SECRET_KEY;
-	if (!secretKey) {
-		console.error(
-			"ERRO CRÍTICO: A variável de ambiente SECRET_KEY para JWT não foi definida."
-		);
-		throw new QueryError("Erro interno no servidor.");
-	}
+	const secretKey = process.env.SECRET_KEY || "SECRET";
+	const token = sign({ user: payload }, secretKey, { expiresIn: 3600 });
 
-	const expiresInSeconds = 3600;
-
-	const signOptions: SignOptions = {
-		expiresIn: expiresInSeconds,
-	};
-
-	const token = sign({ user: body }, secretKey, signOptions);
-
-	res.cookie("jwt", token, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV !== "development",
-		sameSite: "strict",
-	});
+	res.cookie("jwt", token, { httpOnly: true, sameSite: "strict" });
+	return token; // retornando token para Postman
 }
 
-export async function login(
-	req: Request,
-	res: Response,
-	next: NextFunction
-): Promise<void> {
+export async function login(req: Request, res: Response, next: NextFunction) {
 	try {
-		const { email, password } = req.body;
+		const { email, senha } = req.body;
+		if (!email || !senha) return res.status(400).json({ erro: "Email e senha são obrigatórios" });
 
-		if (!email || !password) {
-			throw new InvalidParamError("Email e senha são obrigatórios.");
-		}
+		// Mock: busca usuário
+		const usuarios = [
+			{ id: 1, nome: "Hermes", email: "hermes@email.com", senha: "1234", privilegios: "admin" },
+			{ id: 2, nome: "Maria", email: "maria@email.com", senha: "1234", privilegios: "comum" }
+		];
+		const user = usuarios.find(u => u.email === email && u.senha === senha);
+		if (!user) return res.status(401).json({ erro: "Email ou senha incorretos" });
 
-		const user = await prisma.usuarios.findUnique({
-			where: { email },
-		});
-
-		if (!user) {
-			throw new LoginError("Email e/ou senha incorretos!");
-		}
-
-		const isPasswordMatching = await compare(password, user.senha);
-
-		if (!isPasswordMatching) {
-			throw new LoginError("Email e/ou senha incorretos!");
-		}
-
-		generateJWT(user, res);
-
-		res.status(statusCodes.SUCESS).json({
-			message: "Login realizado com sucesso!",
-			user: {
-				id: user.id,
-				nome: user.nome,
-				privilegios: user.privilegios,
-			},
-		});
+		const token = generateJWT(user, res);
+		return res.json({ message: "Login realizado com sucesso", token });
 	} catch (error) {
 		next(error);
 	}
 }
 
-export function verifyJWT(
-	req: Request,
-	res: Response,
-	next: NextFunction
-): void {
-	const token = req.cookies.jwt;
+export function verifyJWT(req: Request, res: Response, next: NextFunction) {
+	const authHeader = req.headers.authorization;
+	const token = authHeader?.split(" ")[1] || req.cookies.jwt;
+
+	if (!token) return res.status(401).json({ erro: "Acesso negado. Nenhum token fornecido" });
+
 	try {
-		if (!token) {
-			throw new TokenError("Acesso negado. Nenhum token foi fornecido.");
-		}
-
-		const secretKey = process.env.SECRET_KEY;
-
-		if (!secretKey) {
-			throw new QueryError(
-				"Erro interno: A chave secreta do servidor não está configurada."
-			);
-		}
-
+		const secretKey = process.env.SECRET_KEY || "SECRET";
 		const decoded = verify(token, secretKey) as { user: JwtPayload };
 		req.user = decoded.user;
-
 		next();
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (error) {
-		next(error);
+		return res.status(401).json({ erro: "Token inválido" });
 	}
 }
 
-export function checkRole(allowedRoles: Array<string>) {
-	return (req: Request, res: Response, next: NextFunction): void => {
-		try {
-			if (!req.user || !allowedRoles.includes(req.user.role)) {
-				throw new PermissionError(
-					"Acesso proibido. Você não tem permissão para executar esta ação."
-				);
-				return;
-			}
-			next();
-		} catch (error) {
-			next(error);
+export function checkRole(allowedRoles: string[]) {
+	return (req: Request, res: Response, next: NextFunction) => {
+		if (!req.user || !allowedRoles.includes(req.user.role)) {
+			return res.status(403).json({ erro: "Acesso proibido" });
 		}
+		next();
 	};
 }

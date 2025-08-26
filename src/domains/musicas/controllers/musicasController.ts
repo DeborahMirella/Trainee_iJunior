@@ -1,115 +1,64 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Router, Request, Response, NextFunction } from "express";
-import MusicService from "../services/musicaService";
-import musicaService from "../services/musicaService";
-//import { ExecSyncOptions } from "child_process";
-import statusCodes from "../../../../utils/constants/statusCode";
-//import { verify } from "crypto";
-import { checkRole } from "../../../middlewares/auth";
-import { verifyJWT } from "../../../middlewares/auth";
+import { verifyJWT, checkRole } from "../../../middlewares/auth";
 
 const router = Router();
 
-router.post(
-	"/",
-	verifyJWT,
-	checkRole(["admin"]),
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicaNova = await musicaService.criarMusica(req.body);
+const musicas = [
+	{ id: 1, nome: "Pais e Filhos", genero: "Rock", artistaId: 1 },
+	{ id: 2, nome: "Envolver", genero: "Pop", artistaId: 2 },
+];
 
-			res.status(statusCodes.CREATED).json(musicaNova);
-		} catch (error) {
-			next(error);
-		}
-	}
-);
+// POST /musicas → cria nova (admin)
+router.post("/", verifyJWT, checkRole(["admin"]), (req: Request, res: Response) => {
+	const { nome, genero, artistaId } = req.body;
+	if (!nome || !genero || !artistaId) return res.status(400).json({ erro: "Campos obrigatórios faltando" });
 
-//====== Read ========
+	const nova = { id: musicas.length + 1, nome, genero, artistaId };
+	musicas.push(nova);
+	return res.status(201).json(nova);
+});
 
-//Retorna todas as musicas
-router.get(
-	"/",
-	verifyJWT,
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicas = await MusicService.listarMusicas();
+// GET /musicas → lista todas
+router.get("/", verifyJWT, (req: Request, res: Response) => {
+	return res.json(musicas);
+});
 
-			res.status(statusCodes.SUCESS).json(musicas);
-		} catch (error) {
-			next(error);
-		}
-	}
-);
+// GET /musicas/:id → busca por id
+router.get("/:id", verifyJWT, (req: Request, res: Response) => {
+	const musica = musicas.find(m => m.id === Number(req.params.id));
+	if (!musica) return res.status(404).json({ erro: "Música não encontrada" });
+	return res.json(musica);
+});
 
-//Consegue música por id
-router.get(
-	"/:id",
-	verifyJWT,
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicaPorId = await musicaService.conseguirMusicaPorId(
-				Number(req.params.id)
-			);
-			res.status(statusCodes.SUCESS).json(musicaPorId);
-		} catch (error) {
-			next(error);
-		}
-	}
-);
-//Consegue músicas por nome
-router.get(
-	"/nome/:nome",
-	verifyJWT,
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicasPorNome = await musicaService.conseguirMusicasPorNome(
-				String(req.params.nome)
-			);
+// GET /musicas/nome/:nome → busca por nome
+router.get("/nome/:nome", verifyJWT, (req: Request, res: Response) => {
+	const resultado = musicas.filter(m => m.nome.toLowerCase().includes(req.params.nome.toLowerCase()));
+	return res.json(resultado);
+});
 
-			res.status(statusCodes.SUCESS).json(musicasPorNome);
-		} catch (error) {
-			next(error);
-		}
-	}
-);
+// PATCH /musicas/:id → atualiza (admin)
+router.patch("/:id", verifyJWT, checkRole(["admin"]), (req: Request, res: Response) => {
+	const idx = musicas.findIndex(m => m.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Música não encontrada" });
 
-//====== Update ======
+	const { nome, genero, artistaId } = req.body;
+	musicas[idx] = {
+		...musicas[idx],
+		nome: nome || musicas[idx].nome,
+		genero: genero || musicas[idx].genero,
+		artistaId: artistaId || musicas[idx].artistaId,
+	};
+	return res.json(musicas[idx]);
+});
 
-router.patch(
-	"/:id",
-	verifyJWT,
-	checkRole(["admin"]),
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicaId = Number(req.params.id);
-			const body = req.body;
-			const musicaAtualizada = await musicaService.atualizaMusica(
-				musicaId,
-				body
-			);
+// DELETE /musicas/:id → remove (admin)
+router.delete("/:id", verifyJWT, checkRole(["admin"]), (req: Request, res: Response) => {
+	const idx = musicas.findIndex(m => m.id === Number(req.params.id));
+	if (idx === -1) return res.status(404).json({ erro: "Música não encontrada" });
 
-			res.status(statusCodes.SUCESS).json(musicaAtualizada);
-		} catch (error) {
-			next(error);
-		}
-	}
-);
-//====== Delete=======
+	const removido = musicas.splice(idx, 1);
+	return res.json(removido[0]);
+});
 
-router.delete(
-	"/:id",
-	verifyJWT,
-	checkRole(["admin"]),
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const musicaId = Number(req.params.id);
-
-			await musicaService.deletaMusica(musicaId);
-
-			res.status(statusCodes.NO_CONTENT).send();
-		} catch (error) {
-			next(error);
-		}
-	}
-);
 export default router;
