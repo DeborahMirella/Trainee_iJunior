@@ -1,6 +1,6 @@
 import { NextFunction, Router } from "express";
 import usuariosService from "../services/usuariosService";
-import statusCodes from "../../../../utils/constants/statusCode";
+import statusCodes from "../../../utils/constants/statusCode";
 import { verifyJWT } from "../../../middlewares/auth";
 const router = Router();
 
