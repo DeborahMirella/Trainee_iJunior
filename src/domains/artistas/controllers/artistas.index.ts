@@ -2,7 +2,7 @@ import { NextFunction, Router } from "express";
 
 import ArtistasService from "../services/artistasService";
 
-import statusCodes from "../../../../utils/constants/statusCode";
+import statusCodes from "../../../utils/constants/statusCode";
 
 import { verifyJWT, checkRole } from "../../../middlewares/auth";
 const router = Router();

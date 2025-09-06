@@ -29,7 +29,7 @@ model usuarios {
   foto        String?
   privilegios TipoPrivilegio  @default(comum)
 
-  reproduções reproduções[]
+  reproducoes reproducoes[]
 }
 
 model artistas {
@@ -49,10 +49,10 @@ model musicas {
   artista_id Int
   artistas   artistas  @relation(fields: [artista_id], references: [id])
 
-  reproduções reproduções[]
+  reproducoes reproducoes[]
 }
 
-model reproduções {
+model reproducoes {
   usuario_id   Int
   musica_id    Int
   data_escuta  DateTime

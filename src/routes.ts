@@ -1,22 +1,22 @@
 import { Router } from "express";
-import usuariosController from "./domains/usuarios/controllers/usuariosController";
-import artistasController from "./domains/artistas/controllers/artistasController";
-import musicasController from "./domains/musicas/controllers/musicasController";
-import reproducoesController from "./domains/reproducoes/controllers/reproducoesController";
-import { verifyJWT } from "./middlewares/auth";
+import usuariosRouter from "./domains/usuarios/controllers/usuariosController";
+import artistasRouter from "./domains/artistas/controllers/artistasController";
+import musicasRouter from "./domains/musicas/controllers/musicasController";
+import reproducoesRouter from "./domains/reproducoes/controllers/reproducoesController";
+import { verifyJWT, checkRole } from "./middlewares/auth";
 
-const routes = Router();
+const router = Router();
 
-// Rotas de usuários
-routes.use("/usuarios", usuariosController);
+// usuários
+router.use("/usuarios", usuariosRouter);
 
-// Rotas de artistas (necessário autenticação)
-routes.use("/artistas", verifyJWT, artistasController);
+// artistas
+router.use("/artistas", artistasRouter);
 
-// Rotas de músicas (necessário autenticação)
-routes.use("/musicas", verifyJWT, musicasController);
+// músicas (JWT + admin)
+router.use("/musicas", verifyJWT, checkRole("admin"), musicasRouter);
 
-// Rotas de reproduções (necessário autenticação)
-routes.use("/reproducoes", verifyJWT, reproducoesController);
+// reproduções
+router.use("/reproducoes", reproducoesRouter);
 
-export default routes;
+export default router;
